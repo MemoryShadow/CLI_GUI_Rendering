@@ -1,9 +1,11 @@
 /*
- * @Date: 2020-04-09 18:47:52
+ * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-14 21:36:57
- * @FilePath: \Work\DaFeiJi\main.cpp
+ * @LastEditTime: 2020-04-14 22:38:30
+ * @FilePath: \CLI_GUI_Rendering\main.cpp
  */
+
+#define WINDOWS
 
 #include "CLI_GUI_Rendering.h"
 
@@ -48,7 +50,7 @@ int main()
                 printf("W:%d H:%d WF:%d HF:%d\n", width, height, width_flag, height_flag);
                 height_flag = -height_flag;
             }
-            system("cls");
+            // system("cls");
             WindowDraw(main_layer, 1);
             // 移动并计算位置
             layer_Move(TanTiaoXiaoQiu_layer, (width_flag < 0 ? Left : Right) | (height_flag < 0 ? Up : Down), 1);

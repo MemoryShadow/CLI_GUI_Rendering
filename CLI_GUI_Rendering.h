@@ -1,8 +1,8 @@
 /*
- * @Date: 2020-04-14 20:10:06
+ * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-14 21:29:01
- * @FilePath: \Work\DaFeiJi\CLI_layer.h
+ * @LastEditTime: 2020-04-14 22:53:38
+ * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
  */
 
 #include <Windows.h>
@@ -56,6 +56,8 @@ void delete_Window_layer(Window_layer *Window);
 void WindowDraw(Window_layer *Window, int Convert = 0);
 // * 在指定的层中指定的位置,填充指定的字符(成功返回此层指针,失败返回NULL)
 Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char);
+// * 在指定的层中获取指定位置的字符(成功返回此字符,失败..就返回\0好了)
+CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
 Paint_layer *layer_Move(Paint_layer *layer, unsigned Direction, unsigned length);
 
@@ -272,56 +274,74 @@ void WindowDraw(Window_layer *Window, int Convert)
     // 如果备份内容为NULL就执行初始化
     if (Cache_Window == NULL)
     {
-        new_Window_layer(Window->width, Window->height);
+        Cache_Window = new_Window_layer(Window->width, Window->height);
     }
-    else
-        // 兼容化备份区域 如果宽高不一样(会先删除之前的窗口)
-        if ((Cache_Window->width != Window->width) || (Cache_Window->height != Window->height))
-    {
+    else if ((Cache_Window->width != Window->width) || (Cache_Window->height != Window->height))
+    { // 兼容化备份区域 如果宽高不一样(会先删除之前的窗口)
         // * 创建新窗口
+        Window_layer *T_Compatible_Window = new_Window_layer(Window->width, Window->height);
         // * 复制内容
-        // * 删除旧窗口
+        for (unsigned width = 0; width < Window->width; width++)
+        {
+            for (unsigned height = 0; height < Window->height; height++)
+            {
+                Write_Point(T_Compatible_Window, width, height, Get_Point(Cache_Window, width, height));
+            }
+        }
+        // * 删除旧缓存窗口,内容并且把新窗口内容交给旧窗口(缓存窗口只有一层)
+        delete_Paint_layer(Cache_Window);
+        Cache_Window = T_Compatible_Window;
     }
     // * 绘制窗口 在绘制窗口时会顺便备份窗口
     for (unsigned height = 0; height < Window->height; height++)
     {
         for (unsigned width = 0; width < Window->width; width++)
         {
-            if (Convert)
-            // 如果转换选项被打开,就执行这里的逻辑
+            // 把将要写入的数据与备份的数据做比对,不一样才写入(此处通过API操作写入)  放行\0
+            if (!Get_Point(Window, width, height) || (Get_Point(Window, width, height) != Get_Point(Cache_Window, width, height)))
             {
-                switch (Window->Data[height][width])
+// 如果不一样,就移动光标至指定位置,以下是Windows下的代码
+#ifdef WINDOWS
+                HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+                COORD pos = {(Convert ? width * 2 : width), height};
+                SetConsoleCursorPosition(hOut, pos);
+#endif
+                if (Convert)
+                // 如果转换选项被打开,就执行这里的逻辑
                 {
-                case '\0':
-                    printf("\u3000");
-                    break;
-                case ' ':
-                    printf("\u3000");
-                    break;
-                case '*':
-                    printf("\uff0a");
-                    break;
-                case '-':
-                    printf("\uff0d");
-                    break;
-                case '|':
-                    printf("\uff5c");
-                    break;
-                default:
-                    printf("%c", Window->Data[height][width]);
-                    break;
-                }
-            }
-            else
-            // 否则就只转换空值
-            {
-                if (Window->Data[height][width] == '\0')
-                {
-                    printf("\u3000");
+                    switch (Window->Data[height][width])
+                    {
+                    case '\0':
+                        printf("\u3000");
+                        break;
+                    case ' ':
+                        printf("\u3000");
+                        break;
+                    case '*':
+                        printf("\uff0a");
+                        break;
+                    case '-':
+                        printf("\uff0d");
+                        break;
+                    case '|':
+                        printf("\uff5c");
+                        break;
+                    default:
+                        printf("%c", Window->Data[height][width]);
+                        break;
+                    }
                 }
                 else
+                // 否则就只转换空值
                 {
-                    printf("%c", Window->Data[height][width]);
+                    if (Window->Data[height][width] == '\0')
+                    {
+                        printf("\u3000");
+                    }
+                    else
+                    {
+                        printf("%c", Window->Data[height][width]);
+                    }
                 }
             }
         }

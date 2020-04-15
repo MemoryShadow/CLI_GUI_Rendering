@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-15 08:35:44
+ * @LastEditTime: 2020-04-15 19:55:40
  * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
  */
 
@@ -45,7 +45,7 @@ Paint_layer *new_Paint_layer(Window_layer *Window);
 // * 计算某个窗口绘制层数量
 unsigned layer_length(const Window_layer *Window);
 // * 删除某个指针指向的层(别忘记先剥离)
-Paint_layer *delete_Paint_layer(Window_layer *Window);
+Paint_layer *delete_Paint_layer(Paint_layer *layer);
 // * 通过索引取得某个层的指针
 Paint_layer *layer_index(Window_layer *Window, unsigned index);
 // * 将某个层从窗口中剥离出来(拒绝剥离0)

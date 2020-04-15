@@ -12,7 +12,7 @@
 
 ### 作用
 
-命令行中界面的多图层渲染,就像Adobe PhotoShop 中的图层一样对各个图层进行单独的管理,移动.您只需要关注算法而不需要去为简单的测试环境思考界面
+命令行中界面的多图层渲染,就像Adobe Photoshop 中的图层一样对各个图层进行单独的管理,移动.您只需要关注算法而不需要去为简单的测试环境思考界面
 
 ### 用法示例
 
@@ -39,7 +39,8 @@
 
 ##### Paint_layer
 
-原始类型:
+<details>
+<summary>声明结构</summary>
 
 ```C
 struct Paint_layer
@@ -55,17 +56,23 @@ struct Paint_layer
 };
 ```
 
+</details>
+
 ##### Window_layer
 
-原始类型:
+<details>
+<summary>声明结构</summary>
 
 ```C
 typedef struct Paint_layer Window_layer;
 ```
 
+</details>
+
 ##### MoveDirection
 
-原始类型:
+<details>
+<summary>声明结构</summary>
 
 ```C
 enum MoveDirection
@@ -77,12 +84,22 @@ enum MoveDirection
 };
 ```
 
+</details>
+
 #### 函数
 
 这个头文件中包含了以下几个函数
 
 |函数名|参数列表|返回类型|具体作用|使用示例|
 |---|---|---|---|---|
-|new_Window_layer|unsigned width<br />unsigned height|Window_layer *|创建一个Window_layer结构,返回新建的指针,您可以理解为面向对象中的构造器|`Window_layer *main_layer = new_Window_layer(20, 15);`|
-|new_Paint_layer|Window_layer *Window|Paint_layer *|在指定窗口的顶层创建一个绘制层|` Paint_layer *edge_layer = new_Paint_layer(main_layer);`|
-|layer_length|const Window_layer *Window|unsigned|计算某个窗口层的绘制层数量|`示例代码见详解`|
+|new_Window_layer|`unsigned width`<br />`unsigned height`|Window_layer *|创建一个Window_layer结构,返回新建的指针`您可以理解为面向对象语言中的new操作符`|`Window_layer *main_layer = new_Window_layer(20, 15);`|
+|new_Paint_layer|`Window_layer *Window`|Paint_layer *|在指定窗口的顶层创建一个绘制层|`Paint_layer *edge_layer = new_Paint_layer(main_layer);`|
+|layer_length|`const Window_layer *Window`|unsigned|计算某个窗口层的绘制层数量|`示例代码见详解`|
+|Remove_layer|`Window_layer *Window`<br />`unsigned index`|Paint_layer *|将某个绘制层从所属的窗口层中剥离出来(会拒绝剥离0)|`Remove_layer(main_layer,1)`|
+|delete_Paint_layer|`Paint_layer *layer`|Paint_layer *|释放某个窗口层的内容,`您可以理解为面向对象语言中的delete操作符`(别忘记先将其从窗口层中剥离)|`delete_Paint_layer(Window)`|
+|delete_Window_layer|`Window_layer *Window`|void|释放某个窗口层(会删除其所有绘制层)`您可以理解为面向对象语言中的delete操作符`|`delete_Window_layer(main_layer)`|
+|layer_index|`Window_layer *Window`<br />`unsigned index`|Paint_layer *|取得某个窗口层中指定索引的绘制层指针|`layer_index(main_layer,1)`|
+|Write_Point|`Paint_layer *layer`<br />`unsigned x`<br />`unsigned y`<br />`CHAR Char`|Paint_layer *|在指定的层中指定的位置,填充指定的字符(成功返回此层指针,失败返回NULL)|`示例代码见详解`|
+|Get_Point|`Paint_layer *layer`<br />`unsigned x`<br />`unsigned y`|CHAR|在指定的层中获取指定位置的字符(成功返回此字符,失败..就返回\0好了)|`示例代码见详解`|
+|WindowDraw|`Window_layer *Window`<br />`int Convert = 0`|void|绘制指定的窗口,参数Convert控制是否对于特定的半角字符转换为全角进行渲染|`WindowDraw(main_layer)`|
+|layer_Move|`Paint_layer *layer`<br />`unsigned Direction`<br />`unsigned length`|Paint_layer *|将一个绘制层按照指定的方向移动指定的步长|`layer_Move(layer_length(main_layer,1),Up,1)`|

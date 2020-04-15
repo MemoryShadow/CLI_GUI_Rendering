@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-15 09:17:51
+ * @LastEditTime: 2020-04-15 09:26:09
  * @FilePath: \CLI_GUI_Rendering\FeiJiDaZhan.cpp
  */
 
@@ -75,7 +75,16 @@ int main(int argc, char const *argv[])
 
             // 刷新界面
             WindowDraw(main_layer, 1);
-            printf("%d\t", ch);
+            if (ch == 27)
+            {
+                printf("游戏已暂停:再次按下Esc退出游戏");
+                if (getch() == 27)
+                {
+                    exit(0);
+                }
+            }
+
+            printf("%d\t\t\t\t\t", ch);
         }
     }
     delete_Window_layer(main_layer);

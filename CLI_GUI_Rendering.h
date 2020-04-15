@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-14 22:53:38
+ * @LastEditTime: 2020-04-15 08:35:44
  * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
  */
 
@@ -304,7 +304,11 @@ void WindowDraw(Window_layer *Window, int Convert)
 #ifdef WINDOWS
                 HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
                 COORD pos = {(Convert ? width * 2 : width), height};
+                CONSOLE_CURSOR_INFO cinfo{1, 0};
+                // 移动光标
                 SetConsoleCursorPosition(hOut, pos);
+                // 隐藏光标
+                SetConsoleCursorInfo(hOut, &cinfo);
 #endif
                 if (Convert)
                 // 如果转换选项被打开,就执行这里的逻辑
@@ -343,6 +347,8 @@ void WindowDraw(Window_layer *Window, int Convert)
                         printf("%c", Window->Data[height][width]);
                     }
                 }
+                // 如果数据不同就备份渲染后的数据
+                Write_Point(Cache_Window, width, height, Get_Point(Window, width, height));
             }
         }
         printf("\n");

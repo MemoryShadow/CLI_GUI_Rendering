@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-14 22:38:30
+ * @LastEditTime: 2020-04-15 08:40:07
  * @FilePath: \CLI_GUI_Rendering\main.cpp
  */
 
@@ -34,26 +34,26 @@ int main()
         unsigned width = 1, height = 1;
         int width_flag = 1, height_flag = 1;
         // 绘制
-        Write_Point(TanTiaoXiaoQiu_layer, width, height, '*');
+        Write_Point(TanTiaoXiaoQiu_layer, width += width_flag, height += height_flag, '*');
         while (true)
         {
-            width += width_flag;
-            height += height_flag;
             // 撞墙判断
             if ((width >= (TanTiaoXiaoQiu_layer->width - 2)) || (width <= 1))
             {
-                printf("W:%d H:%d WF:%d HF:%d\n", width, height, width_flag, height_flag);
+                printf("W:%d H:%d WF:%d HF:%d\t\n", width, height, width_flag, height_flag);
                 width_flag = -width_flag;
             }
             if ((height >= (TanTiaoXiaoQiu_layer->height - 2)) || (height <= 1))
             {
-                printf("W:%d H:%d WF:%d HF:%d\n", width, height, width_flag, height_flag);
+                printf("W:%d H:%d WF:%d HF:%d\t\n", width, height, width_flag, height_flag);
                 height_flag = -height_flag;
             }
             // system("cls");
             WindowDraw(main_layer, 1);
             // 移动并计算位置
             layer_Move(TanTiaoXiaoQiu_layer, (width_flag < 0 ? Left : Right) | (height_flag < 0 ? Up : Down), 1);
+            width += width_flag;
+            height += height_flag;
         }
     }
     delete_Window_layer(main_layer);

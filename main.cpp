@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-15 08:40:07
+ * @LastEditTime: 2020-04-15 08:47:46
  * @FilePath: \CLI_GUI_Rendering\main.cpp
  */
 
@@ -9,7 +9,7 @@
 
 #include "CLI_GUI_Rendering.h"
 
-int main()
+int main(int argc, char const *argv[])
 {
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 15);

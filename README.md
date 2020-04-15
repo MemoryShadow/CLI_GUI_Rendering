@@ -35,7 +35,7 @@
 |---|---|---|
 |[Paint_layer](#Paint_layer "点击前往")|struct|中文称谓(在注释中):绘制层 其中储存了有关于本层的绘制信息,可以在相关控制函数的帮助下移动或者绘制新的信息|
 |[Window_layer](#Window_layer "点击前往")|struct|中文称谓(在注释中):窗口层 其中标记了一个"界面",不可储存数据,但是可以拥有多个绘制层|
-|[MoveDirection](#MoveDirection "点击前往")|enum|中文称谓(在注释中):移动方向 在使用[layer_Move](#layer_Move "点击前往")时可以作为第二参数填入,不同方向可以用`|`符号进行隔开同时提交|
+|[MoveDirection](#MoveDirection "点击前往")|enum|中文称谓(在注释中):移动方向 在使用[layer_Move](#layer_Move "点击前往")时可以作为第二参数填入,不同方向可以用\|符号进行隔开同时提交|
 
 ##### Paint_layer
 
@@ -85,3 +85,4 @@ enum MoveDirection
 |---|---|---|---|---|
 |new_Window_layer|unsigned width<br />unsigned height|Window_layer *|创建一个Window_layer结构,返回新建的指针,您可以理解为面向对象中的构造器|`Window_layer *main_layer = new_Window_layer(20, 15);`|
 |new_Paint_layer|Window_layer *Window|Paint_layer *|在指定窗口的顶层创建一个绘制层|` Paint_layer *edge_layer = new_Paint_layer(main_layer);`|
+|layer_length|const Window_layer *Window|unsigned|计算某个窗口层的绘制层数量|`示例代码见详解`|

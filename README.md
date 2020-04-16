@@ -93,7 +93,7 @@ enum MoveDirection
 |函数名|参数列表|返回类型|具体作用|使用示例|
 |---|---|---|---|---|
 |[new_Window_layer](#new_Window_layer "点击访问详解")|`unsigned width`<br />`unsigned height`|Window_layer *|创建一个Window_layer结构,返回新建的指针`您可以理解为面向对象语言中的new操作符`|`Window_layer *main_layer = new_Window_layer(20, 15);`|
-|[new_Paint_layer](#new_Paint_layer "点击访问详解")|`Window_layer *Window`|Paint_layer *|在指定窗口的顶层创建一个绘制层|`Paint_layer *edge_layer = new_Paint_layer(main_layer);`|
+|[new_Paint_layer](#new_Paint_layer "点击访问详解")|`Window_layer *Window`|Paint_layer *|在指定窗口的顶层创建一个绘制层`您可以理解为面向对象语言中的new操作符`|`Paint_layer *edge_layer = new_Paint_layer(main_layer);`|
 |[layer_length](#layer_length "点击访问详解")|`const Window_layer *Window`|unsigned|计算某个窗口层的绘制层数量|`示例代码见详解`|
 |[Remove_layer](#Remove_layer "点击访问详解")|`Window_layer *Window`<br />`unsigned index`|Paint_layer *|将某个绘制层从所属的窗口层中剥离出来(会拒绝剥离0)|`Remove_layer(main_layer,1)`|
 |[delete_Paint_layer](#delete_Paint_layer "点击访问详解")|`Paint_layer *layer`|Paint_layer *|释放某个窗口层的内容,`您可以理解为面向对象语言中的delete操作符`(别忘记先将其从窗口层中剥离)|`delete_Paint_layer(Window)`|
@@ -103,3 +103,49 @@ enum MoveDirection
 |[Get_Point](#Get_Point "点击访问详解")|`Paint_layer *layer`<br />`unsigned x`<br />`unsigned y`|CHAR|在指定的层中获取指定位置的字符(成功返回此字符,失败..就返回\0好了)|`示例代码见详解`|
 |[WindowDraw](#WindowDraw "点击访问详解")|`Window_layer *Window`<br />`int Convert = 0`|void|绘制指定的窗口,参数Convert控制是否对于特定的半角字符转换为全角进行渲染|`WindowDraw(main_layer)`|
 |[layer_Move](#layer_Move "点击访问详解")|`Paint_layer *layer`<br />`unsigned Direction`<br />`unsigned length`|Paint_layer *|将一个绘制层按照指定的方向移动指定的步长|`layer_Move(layer_length(main_layer,1),Up,1)`|
+
+****
+
+##### new_Window_layer
+
+函数原型:
+
+```C
+Window_layer *new_Window_layer(unsigned width, unsigned height);
+```
+
+对于它的两个参数:
+
+`unsigned width`:标记了这个窗口层的最大宽度
+
+`unsigned height`:标记了这个窗口层的最大高度
+
+创建一个Window_layer结构,返回新建的指针
+
+`您可以理解为面向对象语言中的new操作符`
+
+示例代码:
+
+```C
+Window_layer *main_layer = new_Window_layer(20, 15);
+```
+
+它看起来像极了[C++中的new语法](#参考资料\:C\+\+中的new语法 "点击查看")对吗,是的,这就是沿用了C++的语法,但是这个工具目标是在C下运行的,所以千万不要忽略了new后面的下划线
+
+<details>
+<summary>参考资料:C++中的new语法</summary>
+
+###### 参考资料:C++中的new语法
+
+上面所提到的,沿用了C++的语法,此处是参考,对于尚未接触面向对象语言,或者接触过但是尚未接触C++语言的开发者,可能这部分资料会对你有一些帮助.
+
+```C++
+Window_layer *main_layer = new Window_layer(20, 15);
+```
+
+这段代码将会调用类型Window_layer的构造器`Window_layer::Window_layer(unsigned,unsigned)`新增一个Window_layer类型的实例,这个实例的指针会被`Window_layer的构造器`返回
+并且放到`Window_layer *main_layer`所声明的Window_layer类型指针main_layer中去.
+
+如果想要了解更多,请参阅C++文档
+
+</details>

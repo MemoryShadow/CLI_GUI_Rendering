@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 19:50:50
+ * @LastEditTime: 2020-04-28 20:30:31
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
@@ -63,30 +63,44 @@ int main(int argc, char const *argv[])
                 break;
             case 72:
             case 119:
-                layer_Move(Aircraft_layer, Up, 1);
-                // 更新飞机坐标值
-                Aircraft_Position.Y -= 1;
+                // 当飞机不在边界时才进行移动(上边界:2)
+                if (Aircraft_Position.Y >= 2)
+                {
+                    layer_Move(Aircraft_layer, Up, 1);
+                    // 更新飞机坐标值
+                    Aircraft_Position.Y -= 1;
+                }
                 ch = '\0';
                 key_debug = "向前信号";
                 break;
             case 75:
             case 97:
-                layer_Move(Aircraft_layer, Left, 1);
-                Aircraft_Position.X -= 1;
+                if (Aircraft_Position.X >= 3)
+                {
+                    layer_Move(Aircraft_layer, Left, 1);
+                    Aircraft_Position.X -= 1;
+                    printf("%d", Aircraft_Position.X);
+                }
                 ch = '\0';
                 key_debug = "向左信号";
                 break;
             case 77:
             case 100:
-                layer_Move(Aircraft_layer, Right, 1);
-                Aircraft_Position.X += 1;
+                if (Aircraft_Position.X <= Aircraft_layer->width - 4)
+                {
+                    layer_Move(Aircraft_layer, Right, 1);
+                    Aircraft_Position.X += 1;
+                }
                 ch = '\0';
                 key_debug = "向右信号";
                 break;
             case 80:
             case 115:
-                layer_Move(Aircraft_layer, Down, 1);
-                Aircraft_Position.Y += 1;
+                if (Aircraft_Position.Y <= Aircraft_layer->height - 4)
+                {
+                    layer_Move(Aircraft_layer, Down, 1);
+                    Aircraft_Position.Y += 1;
+                }
                 ch = '\0';
                 key_debug = "向后信号";
                 break;

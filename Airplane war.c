@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 13:39:45
+ * @LastEditTime: 2020-04-28 13:46:26
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
@@ -31,12 +31,12 @@ int main(int argc, char const *argv[])
     // 游戏代码
     {
         // 飞机层
-        struct Paint_layer *FeiJi = new_Paint_layer(main_layer);
+        struct Paint_layer *Aircraft_layer = new_Paint_layer(main_layer);
         // 绘制飞机
-        Write_Point(FeiJi, FeiJi->width / 2 + 1, FeiJi->height - 2, '*');
-        Write_Point(FeiJi, FeiJi->width / 2, FeiJi->height - 3, '*');
-        Write_Point(FeiJi, FeiJi->width / 2, FeiJi->height - 2, '*');
-        Write_Point(FeiJi, FeiJi->width / 2 - 1, FeiJi->height - 2, '*');
+        Write_Point(Aircraft_layer, Aircraft_layer->width / 2 + 1, Aircraft_layer->height - 2, '*');
+        Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 3, '*');
+        Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 2, '*');
+        Write_Point(Aircraft_layer, Aircraft_layer->width / 2 - 1, Aircraft_layer->height - 2, '*');
         CHAR ch = 0;
         // 消息循环
         while (1)
@@ -50,22 +50,22 @@ int main(int argc, char const *argv[])
                 continue;
             case 72:
             case 119:
-                layer_Move(FeiJi, Up, 1);
+                layer_Move(Aircraft_layer, Up, 1);
                 ch = '\0';
                 break;
             case 75:
             case 97:
-                layer_Move(FeiJi, Left, 1);
+                layer_Move(Aircraft_layer, Left, 1);
                 ch = '\0';
                 break;
             case 77:
             case 100:
-                layer_Move(FeiJi, Right, 1);
+                layer_Move(Aircraft_layer, Right, 1);
                 ch = '\0';
                 break;
             case 80:
             case 115:
-                layer_Move(FeiJi, Down, 1);
+                layer_Move(Aircraft_layer, Down, 1);
                 ch = '\0';
                 break;
             default:

@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 13:46:26
+ * @LastEditTime: 2020-04-28 19:50:50
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
@@ -37,7 +37,14 @@ int main(int argc, char const *argv[])
         Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 3, '*');
         Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 2, '*');
         Write_Point(Aircraft_layer, Aircraft_layer->width / 2 - 1, Aircraft_layer->height - 2, '*');
+        // 储存飞机位置
+        COORD Aircraft_Position = {
+            Aircraft_layer->width / 2,
+            Aircraft_layer->height - 3};
+        // 创建一个层用于储存飞机子弹
+        struct Paint_layer *Aircraft_Bullet_layer = new_Paint_layer(main_layer);
         CHAR ch = 0;
+        CHAR *key_debug = NULL;
         // 消息循环
         while (1)
         {
@@ -48,31 +55,47 @@ int main(int argc, char const *argv[])
             // 处理特殊信号
             case -32:
                 continue;
+            case 32:
+                // 按下空格时在飞机前方绘制子弹
+                Write_Point(Aircraft_Bullet_layer, Aircraft_Position.X, Aircraft_Position.Y - 1, '|');
+                ch = '\0';
+                key_debug = "空格";
+                break;
             case 72:
             case 119:
                 layer_Move(Aircraft_layer, Up, 1);
+                // 更新飞机坐标值
+                Aircraft_Position.Y -= 1;
                 ch = '\0';
+                key_debug = "向前信号";
                 break;
             case 75:
             case 97:
                 layer_Move(Aircraft_layer, Left, 1);
+                Aircraft_Position.X -= 1;
                 ch = '\0';
+                key_debug = "向左信号";
                 break;
             case 77:
             case 100:
                 layer_Move(Aircraft_layer, Right, 1);
+                Aircraft_Position.X += 1;
                 ch = '\0';
+                key_debug = "向右信号";
                 break;
             case 80:
             case 115:
                 layer_Move(Aircraft_layer, Down, 1);
+                Aircraft_Position.Y += 1;
                 ch = '\0';
+                key_debug = "向后信号";
                 break;
             default:
                 ch = ch;
                 break;
             }
-
+            // 无论如何,子弹都会向前移动
+            layer_Move(Aircraft_Bullet_layer, Up, 1);
             // 刷新界面
             WindowDraw(main_layer, 1);
             if (ch == 27)
@@ -84,7 +107,7 @@ int main(int argc, char const *argv[])
                 }
             }
 
-            printf("%d\t\t\t\t\t", ch);
+            ch != NULL ? printf("当前没有任何操作") : printf("%s\t\t\t\t\t", key_debug);
         }
     }
     delete_Window_layer(main_layer);

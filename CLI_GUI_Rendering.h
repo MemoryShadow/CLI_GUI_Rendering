@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 13:39:16
+ * @LastEditTime: 2020-04-28 19:32:19
  * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
  */
 
@@ -236,6 +236,7 @@ void delete_Window_layer(Window_layer *Window)
 }
 
 // TODO 准备优化 优化思路是对内容进行缓存,使用OS API对于写入的点进行处理
+// TODO 针对Windows的优化已完成.
 // 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值)
 void WindowDraw(Window_layer *Window, int Convert)
 {

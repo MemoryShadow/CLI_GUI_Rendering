@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-15 08:47:46
- * @FilePath: \CLI_GUI_Rendering\main.cpp
+ * @LastEditTime: 2020-04-28 13:39:32
+ * @FilePath: \CLI_GUI_Rendering\Bouncing ball.c
  */
 
 #define WINDOWS
@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 15);
     //边界图层
-    Paint_layer *edge_layer = new_Paint_layer(main_layer);
+    struct Paint_layer *edge_layer = new_Paint_layer(main_layer);
 
     // 绘制周围边界
     for (unsigned index = 1; index < main_layer->width - 1; index++)
@@ -28,14 +28,14 @@ int main(int argc, char const *argv[])
         Write_Point(edge_layer, main_layer->width - 1, index, '|');
     }
     // 小球层
-    Paint_layer *TanTiaoXiaoQiu_layer = new_Paint_layer(main_layer);
+    struct Paint_layer *TanTiaoXiaoQiu_layer = new_Paint_layer(main_layer);
     // 小球运动代码
     {
         unsigned width = 1, height = 1;
         int width_flag = 1, height_flag = 1;
         // 绘制
         Write_Point(TanTiaoXiaoQiu_layer, width += width_flag, height += height_flag, '*');
-        while (true)
+        while (1)
         {
             // 撞墙判断
             if ((width >= (TanTiaoXiaoQiu_layer->width - 2)) || (width <= 1))

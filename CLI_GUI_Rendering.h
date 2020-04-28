@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-15 19:55:40
+ * @LastEditTime: 2020-04-28 13:39:16
  * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
  */
 
@@ -19,7 +19,7 @@ typedef struct Paint_layer
     // 记录每个点的内容
     CHAR **Data;
     // 为链表做的准备
-    Paint_layer *Next;
+    struct Paint_layer *Next;
 } Window_layer;
 
 enum MoveDirection
@@ -41,25 +41,25 @@ enum MoveDirection
 // * 创建窗口
 Window_layer *new_Window_layer(unsigned width, unsigned height);
 // * 在指定窗口的最上层创建绘制层
-Paint_layer *new_Paint_layer(Window_layer *Window);
+struct Paint_layer *new_Paint_layer(Window_layer *Window);
 // * 计算某个窗口绘制层数量
 unsigned layer_length(const Window_layer *Window);
 // * 删除某个指针指向的层(别忘记先剥离)
-Paint_layer *delete_Paint_layer(Paint_layer *layer);
+struct Paint_layer *delete_Paint_layer(struct Paint_layer *layer);
 // * 通过索引取得某个层的指针
-Paint_layer *layer_index(Window_layer *Window, unsigned index);
+struct Paint_layer *layer_index(Window_layer *Window, unsigned index);
 // * 将某个层从窗口中剥离出来(拒绝剥离0)
-Paint_layer *Remove_layer(Window_layer *Window, unsigned index);
+struct Paint_layer *Remove_layer(Window_layer *Window, unsigned index);
 // * 删除某个窗口(会删除其所有绘制层)
 void delete_Window_layer(Window_layer *Window);
 // * 窗口绘制
-void WindowDraw(Window_layer *Window, int Convert = 0);
+void WindowDraw(Window_layer *Window, int Convert);
 // * 在指定的层中指定的位置,填充指定的字符(成功返回此层指针,失败返回NULL)
-Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char);
+struct Paint_layer *Write_Point(struct Paint_layer *layer, unsigned x, unsigned y, CHAR Char);
 // * 在指定的层中获取指定位置的字符(成功返回此字符,失败..就返回\0好了)
-CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y);
+CHAR Get_Point(struct Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
-Paint_layer *layer_Move(Paint_layer *layer, unsigned Direction, unsigned length);
+struct Paint_layer *layer_Move(struct Paint_layer *layer, unsigned Direction, unsigned length);
 
 /**
  * @description: 创建窗口
@@ -98,10 +98,10 @@ Window_layer *new_Window_layer(unsigned width, unsigned height)
  * } 
  * @return: Paint_layer 返回这个新建层的指针
  */
-Paint_layer *new_Paint_layer(Window_layer *Window)
+struct Paint_layer *new_Paint_layer(Window_layer *Window)
 {
     // 将窗口初始化转换为一个层
-    Paint_layer *layer = (Paint_layer *)new_Window_layer(Window->width, Window->height);
+    struct Paint_layer *layer = (struct Paint_layer *)new_Window_layer(Window->width, Window->height);
     // 将层加入链表头
     layer->Next = Window->Next;
     Window->Next = layer;
@@ -140,7 +140,7 @@ unsigned layer_length(const Window_layer *Window)
  * } 
  * @return: Paint_layer 返回对应的层下标
  */
-Paint_layer *layer_index(Window_layer *Window, unsigned index)
+struct Paint_layer *layer_index(Window_layer *Window, unsigned index)
 {
     // 确认是否超过最大下标
     if (layer_length(Window) < index)
@@ -165,7 +165,7 @@ Paint_layer *layer_index(Window_layer *Window, unsigned index)
  * } 
  * @return: Paint_layer 返回已经剥离的层的指针
  */
-Paint_layer *Remove_layer(Window_layer *Window, unsigned index)
+struct Paint_layer *Remove_layer(Window_layer *Window, unsigned index)
 {
     // 确认不超过最大下标或者下标不为0
     if ((index == 0) || (layer_length(Window) < index))
@@ -173,7 +173,7 @@ Paint_layer *Remove_layer(Window_layer *Window, unsigned index)
 
     // 将指针内容迁移
     Window_layer *Window_copy = Window;
-    Paint_layer *Previous_layer = NULL;
+    struct Paint_layer *Previous_layer = NULL;
     // 如果碰到链末或者遇到指定索引值就弹出循环
     for (unsigned length = 0; (Window_copy->Next != NULL) && (length < index); length++)
     {
@@ -195,7 +195,7 @@ Paint_layer *Remove_layer(Window_layer *Window, unsigned index)
  * } 
  * @return: Paint_layer 这个层的控制指针
  */
-Paint_layer *delete_Paint_layer(Paint_layer *layer)
+struct Paint_layer *delete_Paint_layer(struct Paint_layer *layer)
 {
     // 删除行数据
     for (unsigned j = 0; j < layer->height; j++)
@@ -221,7 +221,7 @@ Paint_layer *delete_Paint_layer(Paint_layer *layer)
 void delete_Window_layer(Window_layer *Window)
 {
     // 用于备份的层
-    Paint_layer *Next_layer = Window->Next;
+    struct Paint_layer *Next_layer = Window->Next;
     // * 释放所有层
     while (Window != NULL)
     {
@@ -251,7 +251,7 @@ void WindowDraw(Window_layer *Window, int Convert)
     }
     // * 渲染窗口
     // 绘制层指针
-    Paint_layer *layer = Window->Next;
+    struct Paint_layer *layer = Window->Next;
     // 遍历绘制层列表
     while (layer != NULL)
     {
@@ -304,7 +304,7 @@ void WindowDraw(Window_layer *Window, int Convert)
 #ifdef WINDOWS
                 HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
                 COORD pos = {(Convert ? width * 2 : width), height};
-                CONSOLE_CURSOR_INFO cinfo{1, 0};
+                CONSOLE_CURSOR_INFO cinfo = {1, 0};
                 // 移动光标
                 SetConsoleCursorPosition(hOut, pos);
                 // 隐藏光标
@@ -365,7 +365,7 @@ void WindowDraw(Window_layer *Window, int Convert)
  * } 
  * @return: Paint_layer *
  */
-Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char)
+struct Paint_layer *Write_Point(struct Paint_layer *layer, unsigned x, unsigned y, CHAR Char)
 {
     // 检查是否越界
     if ((layer->height < y) || (layer->width < x))
@@ -387,7 +387,7 @@ Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char)
  * } 
  * @return: CHAR
  */
-CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y)
+CHAR Get_Point(struct Paint_layer *layer, unsigned x, unsigned y)
 {
     // 检查是否越界
     if ((layer->height < y) || (layer->width < x))
@@ -409,7 +409,7 @@ CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y)
  * } 
  * @return: Paint_layer *
  */
-Paint_layer *layer_Move(Paint_layer *layer, unsigned Direction, unsigned length)
+struct Paint_layer *layer_Move(struct Paint_layer *layer, unsigned Direction, unsigned length)
 {
     if ((Direction & Up) == Up)
     {

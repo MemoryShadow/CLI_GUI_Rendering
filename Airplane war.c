@@ -1,8 +1,8 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-15 09:26:09
- * @FilePath: \CLI_GUI_Rendering\FeiJiDaZhan.cpp
+ * @LastEditTime: 2020-04-28 13:39:45
+ * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
 #define WINDOWS
@@ -15,7 +15,7 @@ int main(int argc, char const *argv[])
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 29);
     //边界图层
-    Paint_layer *edge_layer = new_Paint_layer(main_layer);
+    struct Paint_layer *edge_layer = new_Paint_layer(main_layer);
 
     // 绘制周围边界
     for (unsigned index = 1; index < main_layer->width - 1; index++)
@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
     // 游戏代码
     {
         // 飞机层
-        Paint_layer *FeiJi = new_Paint_layer(main_layer);
+        struct Paint_layer *FeiJi = new_Paint_layer(main_layer);
         // 绘制飞机
         Write_Point(FeiJi, FeiJi->width / 2 + 1, FeiJi->height - 2, '*');
         Write_Point(FeiJi, FeiJi->width / 2, FeiJi->height - 3, '*');
@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
         Write_Point(FeiJi, FeiJi->width / 2 - 1, FeiJi->height - 2, '*');
         CHAR ch = 0;
         // 消息循环
-        while (true)
+        while (1)
         {
             if (kbhit())
                 ch = getch();

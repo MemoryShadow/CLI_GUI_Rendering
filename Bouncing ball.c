@@ -1,11 +1,9 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 13:45:42
+ * @LastEditTime: 2020-08-24 23:02:54
  * @FilePath: \CLI_GUI_Rendering\Bouncing ball.c
  */
-
-#define WINDOWS
 
 #include "CLI_GUI_Rendering.h"
 

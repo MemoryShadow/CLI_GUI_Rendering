@@ -1,14 +1,47 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 20:30:31
+ * @LastEditTime: 2020-08-24 23:44:41
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
 #define WINDOWS
 
 #include "CLI_GUI_Rendering.h"
+
+#if _WIN32
 #include <conio.h>
+#endif
+
+#if __linux__
+#include <termio.h>
+// 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
+int getch(void)
+{
+    struct termios tm, tm_old;
+    int fd = 0, ch;
+
+    if (tcgetattr(fd, &tm) < 0)
+    { //保存现在的终端设置
+        return -1;
+    }
+
+    tm_old = tm;
+    cfmakeraw(&tm); //更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
+    if (tcsetattr(fd, TCSANOW, &tm) < 0)
+    { //设置上更改之后的设置
+        return -1;
+    }
+
+    ch = getchar();
+    if (tcsetattr(fd, TCSANOW, &tm_old) < 0)
+    { //更改设置为最初的样子
+        return -1;
+    }
+
+    return ch;
+}
+#endif
 
 int main(int argc, char const *argv[])
 {

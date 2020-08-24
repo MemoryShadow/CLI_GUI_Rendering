@@ -1,11 +1,32 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-04-28 19:32:19
+ * @LastEditTime: 2020-08-25 00:24:14
  * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
  */
 
+#if _WIN32
 #include <Windows.h>
+#endif
+// 在linux下重新实现一些依赖
+#if __linux__
+#if _UNICODE
+typedef char_w CHAR;
+#else
+
+typedef char CHAR;
+typedef short SHORT;
+
+#endif
+// 实现摘自百度百科
+typedef struct _COORD
+{
+    SHORT X; // horizontal coordinate
+    SHORT Y; // vertical coordinate
+} COORD;
+
+#endif
+
 #include <malloc.h>
 #include <stdio.h>
 
@@ -22,13 +43,13 @@ typedef struct Paint_layer
     struct Paint_layer *Next;
 } Window_layer;
 
-enum MoveDirection
+typedef enum
 {
     Up = 1,
     Down = 2,
     Left = 4,
     Right = 8
-};
+} MoveDirection;
 
 /* 
 * 绘制层规则很简单
@@ -60,6 +81,10 @@ struct Paint_layer *Write_Point(struct Paint_layer *layer, unsigned x, unsigned 
 CHAR Get_Point(struct Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
 struct Paint_layer *layer_Move(struct Paint_layer *layer, unsigned Direction, unsigned length);
+
+#if __linux__
+// 在linux下,相对布局移动光标的实现
+#endif
 
 /**
  * @description: 创建窗口
@@ -301,15 +326,24 @@ void WindowDraw(Window_layer *Window, int Convert)
             // 把将要写入的数据与备份的数据做比对,不一样才写入(此处通过API操作写入)  放行\0
             if (!Get_Point(Window, width, height) || (Get_Point(Window, width, height) != Get_Point(Cache_Window, width, height)))
             {
-// 如果不一样,就移动光标至指定位置,以下是Windows下的代码
-#ifdef WINDOWS
-                HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+                // 根据Convert的值来到达下一个值的位置
                 COORD pos = {(Convert ? width * 2 : width), height};
+// 如果不一样,就移动光标至指定位置,以下是Windows下的代码
+#ifdef _WIN32
+                // 获取窗口句柄
+                HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+                // 设置属性
                 CONSOLE_CURSOR_INFO cinfo = {1, 0};
                 // 移动光标
                 SetConsoleCursorPosition(hOut, pos);
                 // 隐藏光标
                 SetConsoleCursorInfo(hOut, &cinfo);
+#endif
+#if __linux__
+                // 记录当前光标的位置,便于返回0点或者进行相对运算
+                // 移动光标
+                // 隐藏光标
+                printf("\033[?25l");
 #endif
                 if (Convert)
                 // 如果转换选项被打开,就执行这里的逻辑
@@ -410,7 +444,7 @@ CHAR Get_Point(struct Paint_layer *layer, unsigned x, unsigned y)
  * } 
  * @return: Paint_layer *
  */
-struct Paint_layer *layer_Move(struct Paint_layer *layer, unsigned Direction, unsigned length)
+struct Paint_layer *layer_Move(struct Paint_layer *layer, MoveDirection Direction, unsigned length)
 {
     if ((Direction & Up) == Up)
     {

@@ -1,46 +1,20 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-24 23:44:41
+ * @LastEditTime: 2020-08-25 02:50:18
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
-#define WINDOWS
-
 #include "CLI_GUI_Rendering.h"
+
+#include <stdlib.h>
 
 #if _WIN32
 #include <conio.h>
 #endif
 
 #if __linux__
-#include <termio.h>
-// 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
-int getch(void)
-{
-    struct termios tm, tm_old;
-    int fd = 0, ch;
 
-    if (tcgetattr(fd, &tm) < 0)
-    { //保存现在的终端设置
-        return -1;
-    }
-
-    tm_old = tm;
-    cfmakeraw(&tm); //更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
-    if (tcsetattr(fd, TCSANOW, &tm) < 0)
-    { //设置上更改之后的设置
-        return -1;
-    }
-
-    ch = getchar();
-    if (tcsetattr(fd, TCSANOW, &tm_old) < 0)
-    { //更改设置为最初的样子
-        return -1;
-    }
-
-    return ch;
-}
 #endif
 
 int main(int argc, char const *argv[])
@@ -96,6 +70,7 @@ int main(int argc, char const *argv[])
                 break;
             case 72:
             case 119:
+            case 'A':
                 // 当飞机不在边界时才进行移动(上边界:2)
                 if (Aircraft_Position.Y >= 2)
                 {
@@ -108,6 +83,7 @@ int main(int argc, char const *argv[])
                 break;
             case 75:
             case 97:
+            case 'D':
                 if (Aircraft_Position.X >= 3)
                 {
                     layer_Move(Aircraft_layer, Left, 1);
@@ -119,6 +95,7 @@ int main(int argc, char const *argv[])
                 break;
             case 77:
             case 100:
+            case 'C':
                 if (Aircraft_Position.X <= Aircraft_layer->width - 4)
                 {
                     layer_Move(Aircraft_layer, Right, 1);
@@ -129,6 +106,7 @@ int main(int argc, char const *argv[])
                 break;
             case 80:
             case 115:
+            case 'B':
                 if (Aircraft_Position.Y <= Aircraft_layer->height - 4)
                 {
                     layer_Move(Aircraft_layer, Down, 1);
@@ -147,14 +125,29 @@ int main(int argc, char const *argv[])
             WindowDraw(main_layer, 1);
             if (ch == 27)
             {
-                printf("游戏已暂停:再次按下Esc退出游戏");
-                if (getch() == 27)
+
+                if (kbhit())
                 {
-                    exit(0);
+                    //检查是否为其他控制建
+                    if (getch() == 91)
+                    {
+                        // 如果为控制按键,就跳出循环,将权限交给上面的控制代码
+                        // printf("%d\n\n", getch());
+                        continue;
+                    }
+                    else
+                    {
+                        // 如果不为其他控制按键,就提示
+                        printf("游戏已暂停:再次按下Esc退出游戏");
+                        if (getch() == 27)
+                        {
+                            exit(0);
+                        }
+                    }
                 }
             }
 
-            ch != NULL ? printf("当前没有任何操作") : printf("%s\t\t\t\t\t", key_debug);
+            ch != '\0' ? printf("当前没有任何操作") : printf("%s\t\t\t\t\t", key_debug);
         }
     }
     delete_Window_layer(main_layer);

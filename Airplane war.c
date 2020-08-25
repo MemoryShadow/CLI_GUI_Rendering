@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-15 08:46:26
- * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-25 02:50:18
+ * @LastEditors  : MemoryShadow
+ * @LastEditTime : 2020-08-25 14:43:23
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
@@ -125,7 +125,7 @@ int main(int argc, char const *argv[])
             WindowDraw(main_layer, 1);
             if (ch == 27)
             {
-
+                // 在linux下，特殊控制键是以ESC(27)开头的字符串，所以要在这里对它进行解析
                 if (kbhit())
                 {
                     //检查是否为其他控制建

@@ -1,12 +1,16 @@
-/*
- * @Date: 2020-04-14 21:41:50
- * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-25 02:51:56
- * @FilePath: \CLI_GUI_Rendering\CLI_GUI_Rendering.h
+/*** 
+ * @Date         : 2020-04-14 21:41:50
+ * @Author       : MemoryShadow
+ * @LastEditors  : MemoryShadow
+ * @LastEditTime : 2020-08-25 14:32:30
+ * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
+
+#include "CLI_Key_Response_Game.h"
 
 #include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #if _WIN32
 #include <Windows.h>
@@ -31,61 +35,6 @@ typedef struct _COORD
     SHORT Y; // vertical coordinate
 } COORD;
 
-#include <termio.h>
-// 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
-int getch(void)
-{
-    struct termios tm, tm_old;
-    int fd = 0, ch = '\0';
-
-    if (tcgetattr(fd, &tm) < 0)
-    { //保存现在的终端设置
-        return -1;
-    }
-
-    tm_old = tm;
-    cfmakeraw(&tm); //更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
-    if (tcsetattr(fd, TCSANOW, &tm) < 0)
-    { //设置上更改之后的设置
-        return -1;
-    }
-
-    ch = getchar();
-    if (tcsetattr(fd, TCSANOW, &tm_old) < 0)
-    { //更改设置为最初的样子
-        return -1;
-    }
-
-    return ch;
-}
-
-#include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
-// kbhit的linux再实现, https://blog.csdn.net/dongshibo12/article/details/76208482?utm_source=blogxgwz0
-int kbhit(void)
-{
-    struct termios oldTermios, newt;
-    int ch;
-    int oldFcntl;
-    tcgetattr(STDIN_FILENO, &oldTermios);
-    newt = oldTermios;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    // 这里的F_GETFL,F_SETFL,O_NONBLOCK都能找到定义,但是不知道为什么一直报错
-    oldFcntl = fcntl(STDIN_FILENO, F_GETFL, 0);
-    fcntl(STDIN_FILENO, F_SETFL, oldFcntl | O_NONBLOCK);
-    ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldTermios);
-    fcntl(STDIN_FILENO, F_SETFL, oldFcntl);
-    if (ch != EOF)
-    {
-        ungetc(ch, stdin);
-        return 1;
-    }
-    return 0;
-}
-
 #endif
 
 // 一个绘制层的信息
@@ -100,14 +49,6 @@ typedef struct Paint_layer
     // 为链表做的准备
     struct Paint_layer *Next;
 } Window_layer;
-
-typedef enum
-{
-    Up = 1,
-    Down = 2,
-    Left = 4,
-    Right = 8
-} MoveDirection;
 
 /* 
 * 绘制层规则很简单
@@ -139,10 +80,6 @@ struct Paint_layer *Write_Point(struct Paint_layer *layer, unsigned x, unsigned 
 CHAR Get_Point(struct Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
 struct Paint_layer *layer_Move(struct Paint_layer *layer, unsigned Direction, unsigned length);
-
-#if __linux__
-// 在linux下,相对布局移动光标的实现
-#endif
 
 /**
  * @description: 创建窗口
@@ -319,7 +256,6 @@ void delete_Window_layer(Window_layer *Window)
 }
 
 // TODO 准备优化 优化思路是对内容进行缓存,使用OS API对于写入的点进行处理
-// TODO 针对Windows的优化已完成.
 // 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值)
 void WindowDraw(Window_layer *Window, int Convert)
 {
@@ -396,6 +332,7 @@ void WindowDraw(Window_layer *Window, int Convert)
                 SetConsoleCursorPosition(hOut, pos);
                 // 隐藏光标
                 SetConsoleCursorInfo(hOut, &cinfo);
+                usleep(50);
 #endif
 // 以下是linux下的代码
 #if __linux__

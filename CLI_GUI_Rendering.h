@@ -336,7 +336,7 @@ void WindowDraw(Window_layer *Window, int Convert)
 // 以下是linux下的代码
 #if __linux__
                 // 移动光标
-                printf("\033[%d;%dH", pos.Y, pos.X);
+                printf("\033[%d;%dH", pos.Y + (Convert ? 2 : 1), pos.X + (Convert ? 2 : 1));
                 // 隐藏光标
                 printf("\033[?25l");
                 // linux下运行的太快啦!在这里设置上休眠周期

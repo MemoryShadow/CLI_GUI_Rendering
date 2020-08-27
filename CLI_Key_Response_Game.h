@@ -32,6 +32,7 @@ typedef unsigned char ControlSignal; // 储存一个8位的控制信号
 
 #if __linux__
 
+#include <stdio.h>
 #include <termio.h>
 // 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
 int getch(void)
@@ -61,6 +62,7 @@ int getch(void)
 }
 
 #include <fcntl.h>
+#include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
 // kbhit的linux再实现, https://blog.csdn.net/dongshibo12/article/details/76208482?utm_source=blogxgwz0
@@ -73,7 +75,6 @@ int kbhit(void)
     newt = oldTermios;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    // 这里的F_GETFL,F_SETFL,O_NONBLOCK都能找到定义,但是不知道为什么一直报错
     oldFcntl = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, oldFcntl | O_NONBLOCK);
     ch = getchar();
@@ -136,7 +137,7 @@ FunctionKeys isFunctionSignalKey(char keySignal)
             break;
 
         default:
-            return keySignal;
+            Info = keySignal;
             break;
         }
     }
@@ -149,7 +150,52 @@ FunctionKeys isFunctionSignalKey(char keySignal)
     // 首先检查是否为控制键
     if (keySignal == 27)
     {
-        // 如果是控制键
+        if (kbhit())
+        {
+            if (getch() == '\133')
+            {
+                // 如果是控制键，就再次从输入缓冲区取读
+                if (kbhit())
+                    keySignal = getch();
+                // 然后对这个值进行判定，并且返回指定的值
+                switch (keySignal)
+                {
+                case 65:
+                    Info = Up;
+                    break;
+                case 53:
+                    Info = PageUp;
+                    break;
+                case 68:
+                    Info = Left;
+                    break;
+                case 67:
+                    Info = Right;
+                    break;
+                case 66:
+                    Info = Down;
+                    break;
+                case 54:
+                    Info = PageDown;
+                    break;
+                case 51:
+                    Info = Delete;
+                    break;
+
+                default:
+                    Info = keySignal;
+                    break;
+                }
+            }
+            else
+            {
+                Info = NO_FunctionKeys; // 如果输入缓冲区为空就忽略并报告这并非是一个真正的控制键
+            }
+        }
+        else
+        {
+            Info = ESC; // 如果输入缓冲区为空就忽略并报告这真的是一个ESC
+        }
     }
 #endif
     return Info;

@@ -10,7 +10,6 @@
 
 #include <malloc.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #if _WIN32
 #include <Windows.h>

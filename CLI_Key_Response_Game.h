@@ -2,21 +2,29 @@
  * @Date         : 2020-08-25 05:14:28
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-25 16:44:10
+ * @LastEditTime : 2020-08-27 11:54:35
  * @Description  : 一个用于响应玩家按键的工具,它致力于将按键转化为游戏中的按键信号,便于处理
  */
 
-// 包含了控制信号的结构
+// 包含了控制信号的结构(最大支持32位,但是建议大小在一个字节8位)
 typedef enum
 {
-    NO_FunctionKeys = 0,
-    Up = 1,    // (0001)
-    Down = 2,  // (0010)
-    Left = 4,  // (0100)
-    Right = 8, // (1000)
-    ESC = 27
+    NO_FunctionKeys = 0, // (0000 0000)
+    Up = 1,              // (0000 0001)
+    Down = 2,            // (0000 0010)
+    Left = 4,            // (0000 0100)
+    Right = 8,           // (0000 1000)
+    Delete = 16,         // (0001 0000)
+    PageUp = 32,         // (0010 0000)
+    PageDown = 64,       // (0100 0000)
+    ESC = 128            // (1000 0000)
 } MoveDirection,
     FunctionKeys;
+
+typedef unsigned char ControlSignal; // 储存一个8位的控制信号
+
+// typedef struct {
+// };
 
 #if _WIN32
 #include <conio.h>
@@ -88,8 +96,9 @@ int kbhit(void)
  * @return {
  * FunctionKeys 如果是一个控制信号，就返回控制信号，否则返回NO_FunctionKeys(0)
  * } 
+ * 
  */
-FunctionKeys isFunctionSignalKey(unsigned int keySignal)
+FunctionKeys isFunctionSignalKey(char keySignal)
 {
     FunctionKeys Info = NO_FunctionKeys;
 #if _WIN32
@@ -97,12 +106,18 @@ FunctionKeys isFunctionSignalKey(unsigned int keySignal)
     if ((Info == NO_FunctionKeys) && ((keySignal == 0) || (keySignal == 0xE0)))
     {
         // 如果是控制键，就再次从输入缓冲区取读
-        keySignal = getch();
+        if (kbhit())
+            keySignal = getch();
+        else
+            return NO_FunctionKeys; // 如果输入缓冲区为空就忽略并报告这并非是一个真正的控制键
         // 然后对这个值进行判定，并且返回指定的值
         switch (keySignal)
         {
         case 72:
             Info = Up;
+            break;
+        case 73:
+            Info = PageUp;
             break;
         case 75:
             Info = Left;
@@ -112,6 +127,12 @@ FunctionKeys isFunctionSignalKey(unsigned int keySignal)
             break;
         case 80:
             Info = Down;
+            break;
+        case 81:
+            Info = PageDown;
+            break;
+        case 83:
+            Info = Delete;
             break;
 
         default:
@@ -131,5 +152,49 @@ FunctionKeys isFunctionSignalKey(unsigned int keySignal)
         // 如果是控制键
     }
 #endif
+    return Info;
+}
+
+/*** 
+ * @Description: 此函数允许将普通按键也转换为指定的控制键信号，例如按下W会返回Up，同时并不会使原本的监控失去效果(可以完全代替isFunctionSignalKey)
+ * @param {
+ * FunctionSignal 等待转换的控制信号,可以使用|提交多个,但是Key的顺序始终是按照FunctionKeys的顺序进行排列
+ * Key* 要监视的按键列表,按照FunctionKeys的顺序进行排列,不会响应FunctionSignal中为0的项
+ * returnKey 用户按下的按键，直接填写getch()就好
+ * } 
+ * @return {
+ * FunctionKeys 如果是一个控制信号，就返回控制信号，否则返回NO_FunctionKeys(0)
+ * } 
+ */
+FunctionKeys isFunctionSignalKeyPlus(ControlSignal FunctionSignal, char *Key, char returnKey)
+{
+    FunctionKeys Info = NO_FunctionKeys; // 要返回的信息
+    int FunctionSignal_Number = 0;       // 用于记录FunctionSignal最大设置位数的索引
+
+    // 调用控制键检查函数,查看是否本身为一个控制键,如果本身是一个控制键就按照控制键的来,否则才进行兼容性处理
+    Info = isFunctionSignalKey(returnKey);
+    if (Info == NO_FunctionKeys)
+    {
+        // 扫描并且标记位数  0x80 = 1000 0000   从1出发,坐等溢位变成0,然后就可以确认循环结束了
+        for (ControlSignal scanningMask = 1; scanningMask != 0; scanningMask <<= 1) // 循环检查每一位的值
+        {
+            // 检查该位是否被设置为1,如果被设置就与相匹配的位置进行判断
+            if (FunctionSignal & scanningMask)
+            {
+                // 如果符合指定位的要求
+                if (returnKey == Key[FunctionSignal_Number])
+                {
+                    // 就设置Info为当前掩码
+                    Info = scanningMask;
+                    // 并且跳出循环
+                    break;
+                }
+                // 移动索引
+                FunctionSignal_Number++;
+            }
+        }
+    }
+
+    // 返回对应的信号
     return Info;
 }

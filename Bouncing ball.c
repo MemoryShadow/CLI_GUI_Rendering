@@ -1,8 +1,9 @@
-/*
- * @Date: 2020-04-14 21:41:50
- * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-27 15:47:01
- * @FilePath: \CLI_GUI_Rendering\Bouncing ball.c
+/***
+ * @Date         : 2020-04-14 21:41:50
+ * @Author       : MemoryShadow
+ * @LastEditors  : MemoryShadow
+ * @LastEditTime : 2020-08-27 07:59:55
+ * @Description  : 一个看着小球弹跳的测试游戏
  */
 
 #include "CLI_GUI_Rendering.h"

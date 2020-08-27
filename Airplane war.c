@@ -1,8 +1,9 @@
 /*
- * @Date: 2020-04-15 08:46:26
- * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-27 15:46:48
- * @FilePath: \CLI_GUI_Rendering\Airplane war.c
+ * @Date         : 2020-04-15 08:46:26
+ * @Author       : MemoryShadow
+ * @LastEditors  : MemoryShadow
+ * @LastEditTime : 2020-08-27 08:01:05
+ * @Description  : 一个能够操控飞机的游戏.
  */
 
 #include "CLI_GUI_Rendering.h"

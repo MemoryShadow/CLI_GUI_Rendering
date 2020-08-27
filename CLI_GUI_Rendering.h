@@ -10,6 +10,7 @@
 
 #include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #if _WIN32
 #include <Windows.h>
@@ -439,7 +440,7 @@ CHAR Get_Point(struct Paint_layer *layer, unsigned x, unsigned y)
  * Direction 要移动的方向,只响应MoveDirection数据
  * length 要移动的长度
  * } 
- * @return: Paint_layer *
+ * @return: {Paint_layer *}
  */
 struct Paint_layer *layer_Move(struct Paint_layer *layer, MoveDirection Direction, unsigned length)
 {
@@ -532,4 +533,25 @@ struct Paint_layer *layer_Move(struct Paint_layer *layer, MoveDirection Directio
         }
     }
     return layer;
+}
+
+/** 
+ * @description: {
+ * 清除屏幕(兼容多系统的)
+ * }
+ * @param {
+ * void
+ * } 
+ * @return:{
+ * void
+ * }
+ */
+void clear_screen(void)
+{
+#if _WIN32
+    system("cls");
+#endif
+#if __linux__
+    printf("\033[2J");
+#endif
 }

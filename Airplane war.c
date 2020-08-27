@@ -1,28 +1,19 @@
 /*
  * @Date: 2020-04-15 08:46:26
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-27 15:17:20
+ * @LastEditTime: 2020-08-27 15:46:48
  * @FilePath: \CLI_GUI_Rendering\Airplane war.c
  */
 
 #include "CLI_GUI_Rendering.h"
 
-#include <stdlib.h>
-
 #if _WIN32
 #include <conio.h>
 #endif
 
-#if __linux__
-
-#endif
-
 int main(int argc, char const *argv[])
 {
-#if __linux__
-    // 清除屏幕
-    printf("\033[2J");
-#endif
+    clear_screen(); // 清除屏幕
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 29);
     //边界图层

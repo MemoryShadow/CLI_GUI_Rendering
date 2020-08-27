@@ -1,7 +1,7 @@
 /*
  * @Date: 2020-04-14 21:41:50
  * @LastEditors: MemoryShadow
- * @LastEditTime: 2020-08-27 15:17:43
+ * @LastEditTime: 2020-08-27 15:47:01
  * @FilePath: \CLI_GUI_Rendering\Bouncing ball.c
  */
 
@@ -9,10 +9,7 @@
 
 int main(int argc, char const *argv[])
 {
-#if __linux__
-    // 清除屏幕
-    printf("\033[2J");
-#endif
+    clear_screen(); // 清除屏幕
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 15);
     //边界图层

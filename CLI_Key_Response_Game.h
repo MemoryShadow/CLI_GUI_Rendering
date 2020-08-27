@@ -90,7 +90,9 @@ int kbhit(void)
 #endif
 
 /*** 
- * @Description: 此函数对按键进行判断，检查它是否为一个方向控制键
+ * @description: {
+ * 此函数对按键进行判断，检查它是否为一个方向控制键
+ * }
  * @param {
  * keySignal 传入的按键.
  * } 
@@ -202,7 +204,7 @@ FunctionKeys isFunctionSignalKey(char keySignal)
 }
 
 /*** 
- * @Description: 此函数允许将普通按键也转换为指定的控制键信号，例如按下W会返回Up，同时并不会使原本的监控失去效果(可以完全代替isFunctionSignalKey)
+ * @description: 此函数允许将普通按键也转换为指定的控制键信号，例如按下W会返回Up，同时并不会使原本的监控失去效果(可以完全代替isFunctionSignalKey)
  * @param {
  * FunctionSignal 等待转换的控制信号,可以使用|提交多个,但是Key的顺序始终是按照FunctionKeys的顺序进行排列
  * Key* 要监视的按键列表,按照FunctionKeys的顺序进行排列,不会响应FunctionSignal中为0的项

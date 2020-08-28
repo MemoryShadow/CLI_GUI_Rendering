@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-28 13:53:03
+ * @LastEditTime : 2020-08-28 18:05:24
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -37,11 +37,16 @@ typedef struct _COORD
 
 #endif
 
+_POINT;
+
 // 一个绘制层的信息
-typedef struct _Paint_layer
+typedef struct _Layer
 {
-    // 储存起始位置
-    COORD start;
+    struct
+    {
+        unsigned X;
+        unsigned Y;
+    } start;
     // 层的宽
     unsigned width;
     // 层的高
@@ -49,7 +54,7 @@ typedef struct _Paint_layer
     // 记录每个点的内容
     CHAR **Data;
     // 为链表做的准备
-    struct _Paint_layer *Next;
+    struct _Layer *Next;
 } Window_layer, SmartObject_Paint_layer, Paint_layer;
 
 /* 
@@ -60,14 +65,17 @@ typedef struct _Paint_layer
 */
 
 // 函数签名
-// * 创建窗口
+// * 创建窗口层
 Window_layer *new_Window_layer(unsigned width, unsigned height);
-// * 在指定窗口的最上层创建绘制层
-Paint_layer *new_Paint_layer(Window_layer *Window);
+// * 在指定窗口的最上层创建一个指定大小的绘制层,如果为0就继承窗口层的属性
+Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned height);
 // * 计算某个窗口绘制层数量
 unsigned layer_length(const Window_layer *Window);
+// * 设置指定层在它相对窗口0,0的位置(窗口层现在可以包裹在上一级窗口层中,被统一认为是绘制层,但是可以单独进行相对响应)
+Paint_layer *setPaint_layer(Paint_layer *layer, unsigned X, unsigned Y);
 // * 删除某个指针指向的层(别忘记先剥离)
-Paint_layer *delete_Paint_layer(Paint_layer *layer);
+Paint_layer *
+delete_Paint_layer(Paint_layer *layer);
 // * 通过索引取得某个层的指针
 Paint_layer *layer_index(Window_layer *Window, unsigned index);
 // * 将某个层从窗口中剥离出来(拒绝剥离0)
@@ -97,6 +105,8 @@ Window_layer *new_Window_layer(unsigned width, unsigned height)
     Window_layer *Window = (Window_layer *)malloc(sizeof(Window_layer));
     Window->Data = (CHAR **)malloc(sizeof(CHAR *) * height);
     // 进行初始化(顺便对二维数组内容进行界定)
+    Window->start.X = 0; // 设置一个窗口的默认位置在0,0的位置
+    Window->start.Y = 0;
     for (unsigned j = 0; j < height; j++)
     {
         Window->Data[j] = (CHAR *)malloc(sizeof(CHAR) * width);
@@ -120,10 +130,10 @@ Window_layer *new_Window_layer(unsigned width, unsigned height)
  * } 
  * @return: Paint_layer 返回这个新建层的指针
  */
-Paint_layer *new_Paint_layer(Window_layer *Window)
+Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned height)
 {
     // 将窗口初始化转换为一个层
-    Paint_layer *layer = (Paint_layer *)new_Window_layer(Window->width, Window->height);
+    Paint_layer *layer = (Paint_layer *)new_Window_layer((width != 0 ? width : Window->width), (height != 0 ? height : Window->height));
     // 将层加入链表头
     layer->Next = Window->Next;
     Window->Next = layer;
@@ -152,6 +162,24 @@ unsigned layer_length(const Window_layer *Window)
         Window_copy = Window_copy->Next;
     }
     return length;
+}
+
+/*** 
+ * @description: 设置指定层在它相对窗口0,0的位置(窗口层现在可以包裹在上一级窗口层中,被统一认为是绘制层,但是可以单独进行相对响应)
+ * @param {
+ * layer 要修改的层指针
+ * X 要修改到X坐标的点
+ * Y 要修改到Y坐标的点
+ * } 
+ * @return {
+ * Paint_layer 返回对应的层下标
+ * } 
+ */
+Paint_layer *setPaint_layer(Paint_layer *layer, unsigned X, unsigned Y)
+{
+    layer->start.X = X;
+    layer->start.Y = Y;
+    return layer;
 }
 
 /**
@@ -257,8 +285,7 @@ void delete_Window_layer(Window_layer *Window)
     Window = NULL;
 }
 
-// TODO 准备优化 优化思路是对内容进行缓存,使用OS API对于写入的点进行处理
-// 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值)
+// 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值为空格)
 void WindowDraw(Window_layer *Window, int Convert)
 {
     // 缓存的上一次打印

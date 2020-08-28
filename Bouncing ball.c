@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 15);
     //边界图层
-    Paint_layer *edge_layer = new_Paint_layer(main_layer);
+    Paint_layer *edge_layer = new_Paint_layer(main_layer, 0, 0);
 
     // 绘制周围边界
     for (unsigned index = 1; index < main_layer->width - 1; index++)
@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
         Write_Point(edge_layer, main_layer->width - 1, index, '|');
     }
     // 小球层
-    Paint_layer *ball_layer = new_Paint_layer(main_layer);
+    Paint_layer *ball_layer = new_Paint_layer(main_layer, 0, 0);
     // 小球运动代码
     {
         unsigned width = 1, height = 1;

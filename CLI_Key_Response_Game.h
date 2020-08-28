@@ -2,7 +2,7 @@
  * @Date         : 2020-08-25 05:14:28
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-27 11:54:35
+ * @LastEditTime : 2020-08-28 12:40:36
  * @Description  : 一个用于响应玩家按键的工具,它致力于将按键转化为游戏中的按键信号,便于处理
  */
 
@@ -101,7 +101,7 @@ int kbhit(void)
  * } 
  * 
  */
-FunctionKeys isFunctionSignalKey(char keySignal)
+FunctionKeys isFunctionSignalKey(ControlSignal keySignal)
 {
     FunctionKeys Info = NO_FunctionKeys;
 #if _WIN32

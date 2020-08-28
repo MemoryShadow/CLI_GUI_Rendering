@@ -1,4 +1,4 @@
-/*
+/***
  * @Date         : 2020-04-15 08:46:26
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
     // 在最开始创建主绘制层(窗口层)
     Window_layer *main_layer = new_Window_layer(20, 29);
     //边界图层
-    struct Paint_layer *edge_layer = new_Paint_layer(main_layer);
+    Paint_layer *edge_layer = new_Paint_layer(main_layer);
 
     // 绘制周围边界
     for (unsigned index = 1; index < main_layer->width - 1; index++)
@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
     // 游戏代码
     {
         // 飞机层
-        struct Paint_layer *Aircraft_layer = new_Paint_layer(main_layer);
+        Paint_layer *Aircraft_layer = new_Paint_layer(main_layer);
         // 绘制飞机
         Write_Point(Aircraft_layer, Aircraft_layer->width / 2 + 1, Aircraft_layer->height - 2, '*');
         Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 3, '*');
@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
             Aircraft_layer->width / 2,
             Aircraft_layer->height - 3};
         // 创建一个层用于储存飞机子弹
-        struct Paint_layer *Aircraft_Bullet_layer = new_Paint_layer(main_layer);
+        Paint_layer *Aircraft_Bullet_layer = new_Paint_layer(main_layer);
         ControlSignal ch = 0;
         CHAR *key_debug = NULL;
         FunctionKeys functionKeys = NO_FunctionKeys;

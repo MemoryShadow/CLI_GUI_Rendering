@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-28 13:41:30
+ * @LastEditTime : 2020-08-28 13:53:03
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -38,7 +38,7 @@ typedef struct _COORD
 #endif
 
 // 一个绘制层的信息
-typedef struct
+typedef struct _Paint_layer
 {
     // 储存起始位置
     COORD start;
@@ -49,7 +49,7 @@ typedef struct
     // 记录每个点的内容
     CHAR **Data;
     // 为链表做的准备
-    Paint_layer *Next;
+    struct _Paint_layer *Next;
 } Window_layer, SmartObject_Paint_layer, Paint_layer;
 
 /* 

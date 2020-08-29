@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-29 15:38:58
+ * @LastEditTime : 2020-08-29 15:58:02
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -77,14 +77,15 @@ unsigned layer_length(const Window_layer *Window);
 // * 设置指定层在它相对窗口0,0的位置(窗口层现在可以包裹在上一级窗口层中,被统一认为是绘制层,但是可以单独进行相对响应)
 Paint_layer *setPaint_layer(Paint_layer *layer, unsigned X, unsigned Y);
 // * 删除某个指针指向的层(别忘记先剥离)
-Paint_layer *
-delete_Paint_layer(Paint_layer *layer);
+Paint_layer *delete_Paint_layer(Paint_layer *layer);
 // * 通过索引取得某个层的指针
 Paint_layer *layer_index(Window_layer *Window, unsigned index);
 // * 将某个层从窗口中剥离出来(拒绝剥离0)
 Paint_layer *Remove_layer(Window_layer *Window, unsigned index);
 // * 删除某个窗口(会删除其所有绘制层)
 void delete_Window_layer(Window_layer *Window);
+// * 窗口渲染
+Window_layer *WindowRender(Window_layer *Window);
 // * 窗口绘制
 void WindowDraw(Window_layer *Window, int Convert);
 // * 在指定的层中指定的位置,填充指定的字符(成功返回此层指针,失败返回NULL)
@@ -108,8 +109,9 @@ Window_layer *new_Window_layer(unsigned width, unsigned height)
     Window_layer *Window = (Window_layer *)malloc(sizeof(Window_layer));
     Window->Data = (CHAR **)malloc(sizeof(CHAR *) * height);
     // 进行初始化(顺便对二维数组内容进行界定)
-    Window->start.X = 0; // 设置一个窗口的默认位置在0,0的位置
-    Window->start.Y = 0;
+    Window->start.X = 0;    // 设置一个窗口的默认位置在0,0的位置
+    Window->start.Y = 0;    // 设置一个窗口的默认位置在0,0的位置
+    Window->Attributes = 1; // 设置为一个窗口层
     for (unsigned j = 0; j < height; j++)
     {
         Window->Data[j] = (CHAR *)malloc(sizeof(CHAR) * width);
@@ -137,6 +139,8 @@ Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned heig
 {
     // 将窗口初始化转换为一个层
     Paint_layer *layer = (Paint_layer *)new_Window_layer((width != 0 ? width : Window->width), (height != 0 ? height : Window->height));
+    // 标识这是一个窗口层
+    layer->Attributes = 0;
     // 将层加入链表头
     layer->Next = Window->Next;
     Window->Next = layer;
@@ -153,11 +157,11 @@ Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned heig
 unsigned layer_length(const Window_layer *Window)
 {
     // 将指针内容迁移
-    const Window_layer *Window_copy = Window;
+    const Window_layer *Window_copy = Window->Next;
     // 计算长度
     unsigned length = 0;
-    // 检查Next是不是NULL,如果是就马上返回,如果不是就计数+1并移动到下一个
-    while (Window_copy->Next != NULL)
+    // 只有在Next不为NULL，并且Attributes为0(绘制层)时才计数
+    while ((Window_copy->Next != NULL) && (Window_copy->Attributes == 0))
     {
         // 计数+1
         length++;

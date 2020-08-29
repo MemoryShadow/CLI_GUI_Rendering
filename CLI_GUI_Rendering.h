@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-28 18:05:24
+ * @LastEditTime : 2020-08-29 15:21:54
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -285,12 +285,18 @@ void delete_Window_layer(Window_layer *Window)
     Window = NULL;
 }
 
-// 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值为空格)
-void WindowDraw(Window_layer *Window, int Convert)
+/*** 
+ * @description: 渲染指定窗口,渲染后的内容将被储存在窗口层中
+ * @param {
+ * Window 要渲染的窗口层
+ * } 
+ * @return {
+ * Window_layer 返回此窗口层的指针
+ * } 
+ */
+Window_layer *WindowRender(Window_layer *Window)
 {
-    // 缓存的上一次打印
-    static Window_layer *Cache_Window = NULL;
-    // * 清空窗口
+    // * 清空窗口层
     for (unsigned height = 0; height < Window->height; height++)
     {
         for (unsigned width = 0; width < Window->width; width++)
@@ -305,21 +311,40 @@ void WindowDraw(Window_layer *Window, int Convert)
     while (layer != NULL)
     {
         // * 将内容渲染到主窗口
-        // 遍历内容
+        // 按照偏移量检查设置
+        // 遍历此绘制层内容
         for (unsigned height = 0; height < Window->height; height++)
         {
             for (unsigned width = 0; width < Window->width; width++)
             {
                 // 只填充窗口空白部分
-                if (Window->Data[height][width] == '\0')
+                if (Window->Data[height + layer->start.Y][width + layer->start.X] == '\0')
                 {
-                    Window->Data[height][width] = layer->Data[height][width];
+                    Window->Data[height + layer->start.Y][width + layer->start.X] = layer->Data[height][width];
                 }
             }
         }
-        // 将当前索引移动到下一个
+        // 将当前索引移动到下一个层
         layer = layer->Next;
     }
+    return Window;
+}
+
+// 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值为空格)
+void WindowDraw(Window_layer *Window, int Convert)
+{
+    // 缓存的上一次打印
+    static Window_layer *Cache_Window = NULL;
+    // * 清空窗口
+    for (unsigned height = 0; height < Window->height; height++)
+    {
+        for (unsigned width = 0; width < Window->width; width++)
+        {
+            Write_Point(Window, width, height, '\0');
+        }
+    }
+    // * 渲染窗口
+    WindowRender(Window);
     // 如果备份内容为NULL就执行初始化
     if (Cache_Window == NULL)
     {

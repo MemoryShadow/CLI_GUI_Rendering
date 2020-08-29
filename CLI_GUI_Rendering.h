@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-29 16:23:32
+ * @LastEditTime : 2020-08-29 16:30:25
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -187,6 +187,40 @@ Paint_layer *setlayerStart(Paint_layer *layer, unsigned X, unsigned Y)
 {
     layer->start.X = X;
     layer->start.Y = Y;
+    return layer;
+}
+
+/** 
+ * @description:  移动一个层的起始位置
+ * @param {
+ * layer 要进行操作的层
+ * Direction 要移动的方向,只响应MoveDirection数据
+ * length 要移动的长度
+ * } 
+ * @return: {Paint_layer *}
+ */
+Paint_layer *MovelayerStart(Paint_layer *layer, MoveDirection Direction, unsigned length)
+{
+    if ((Direction & Up) == Up)
+    {
+        // 高度减去步长
+        layer->start.Y -= length;
+    }
+    if ((Direction & Down) == Down)
+    {
+        // 高度加上步长
+        layer->start.Y += length;
+    }
+    if ((Direction & Left) == Left)
+    {
+        // 宽度减去步长
+        layer->start.X -= length;
+    }
+    if ((Direction & Right) == Right)
+    {
+        // 宽度加上步长
+        layer->start.X += length;
+    }
     return layer;
 }
 
@@ -496,7 +530,7 @@ CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y)
 }
 
 /** 
- * @description:  移动一个层
+ * @description:  移动一个层的内容
  * @param {
  * layer 要进行操作的层
  * Direction 要移动的方向,只响应MoveDirection数据

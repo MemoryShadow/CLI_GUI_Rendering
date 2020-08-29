@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-29 16:40:50
+ * @LastEditTime : 2020-08-29 17:13:42
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -131,6 +131,8 @@ Window_layer *new_Window_layer(unsigned width, unsigned height)
  * @description: 在指定窗口的最上层创建绘制层
  * @param {
  * Window 要指定的父图层
+ * width 设置新窗口的宽
+ * height 设置新窗口的高
  * } 
  * @return: Paint_layer 返回这个新建层的指针
  */
@@ -501,7 +503,7 @@ void WindowDraw(Window_layer *Window, int Convert)
 Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char)
 {
     // 检查是否越界
-    if ((layer->height < y) || (layer->width < x))
+    if ((layer->height <= y) || (layer->width <= x))
     {
         return NULL;
     }

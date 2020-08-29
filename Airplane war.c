@@ -30,12 +30,14 @@ int main(int argc, char const *argv[])
     // 游戏代码
     {
         // 飞机层
-        Paint_layer *Aircraft_layer = new_Paint_layer(main_layer, 0, 0);
+        Paint_layer *Aircraft_layer = new_Paint_layer(main_layer, 3, 2);
         // 绘制飞机
-        Write_Point(Aircraft_layer, Aircraft_layer->width / 2 + 1, Aircraft_layer->height - 2, '*');
-        Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 3, '*');
-        Write_Point(Aircraft_layer, Aircraft_layer->width / 2, Aircraft_layer->height - 2, '*');
-        Write_Point(Aircraft_layer, Aircraft_layer->width / 2 - 1, Aircraft_layer->height - 2, '*');
+        Write_Point(Aircraft_layer, 1, 0, '*');
+        Write_Point(Aircraft_layer, 0, 1, '*');
+        Write_Point(Aircraft_layer, 1, 1, '*');
+        Write_Point(Aircraft_layer, 2, 1, '*');
+        // 设置飞机坐标
+        setlayerStart(Aircraft_layer, main_layer->width / 2 - 1, main_layer->height - 3);
         // 储存飞机位置
         COORD Aircraft_Position = {
             Aircraft_layer->width / 2,
@@ -65,9 +67,9 @@ int main(int argc, char const *argv[])
                 {
                 case Up:
                     // 当飞机不在边界时才进行移动(上边界:2)
-                    if (Aircraft_Position.Y >= 2)
+                    if (Aircraft_layer->start.Y >= 2)
                     {
-                        layer_Move(Aircraft_layer, Up, 1);
+                        MovelayerStart(Aircraft_layer, Up, 1);
                         // 更新飞机坐标值
                         Aircraft_Position.Y -= 1;
                     }
@@ -75,9 +77,9 @@ int main(int argc, char const *argv[])
                     key_debug = "向前信号";
                     break;
                 case Left:
-                    if (Aircraft_Position.X >= 3)
+                    if (Aircraft_layer->start.X >= 2)
                     {
-                        layer_Move(Aircraft_layer, Left, 1);
+                        MovelayerStart(Aircraft_layer, Left, 1);
                         Aircraft_Position.X -= 1;
                         printf("%d", Aircraft_Position.X);
                     }
@@ -85,18 +87,18 @@ int main(int argc, char const *argv[])
                     key_debug = "向左信号";
                     break;
                 case Right:
-                    if (Aircraft_Position.X <= Aircraft_layer->width - 4)
+                    if (Aircraft_layer->start.X <= main_layer->width - 5)
                     {
-                        layer_Move(Aircraft_layer, Right, 1);
+                        MovelayerStart(Aircraft_layer, Right, 1);
                         Aircraft_Position.X += 1;
                     }
                     ch = '\0';
                     key_debug = "向右信号";
                     break;
                 case Down:
-                    if (Aircraft_Position.Y <= Aircraft_layer->height - 4)
+                    if (Aircraft_layer->start.Y <= main_layer->height - 4)
                     {
-                        layer_Move(Aircraft_layer, Down, 1);
+                        MovelayerStart(Aircraft_layer, Down, 1);
                         Aircraft_Position.Y += 1;
                     }
                     ch = '\0';
@@ -120,7 +122,7 @@ int main(int argc, char const *argv[])
                 if (ch == 32)
                 {
                     // 按下空格时在飞机前方绘制子弹
-                    Write_Point(Aircraft_Bullet_layer, Aircraft_Position.X, Aircraft_Position.Y - 1, '|');
+                    Write_Point(Aircraft_Bullet_layer, Aircraft_layer->start.X + 1, Aircraft_layer->start.Y - 1, '|');
                     ch = '\0';
                     key_debug = "空格";
                 }

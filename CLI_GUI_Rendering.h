@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-29 16:30:25
+ * @LastEditTime : 2020-08-29 16:40:50
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -359,10 +359,14 @@ Window_layer *WindowRender(Window_layer *Window)
         {
             for (unsigned width = 0; width < layer->width; width++)
             {
-                // 只填充窗口空白部分
-                if (Window->Data[height + layer->start.Y][width + layer->start.X] == '\0')
+                // 不渲染超出部分
+                if (((height + layer->start.Y) >= 0) && ((height + layer->start.Y) < Window->height) && ((width + layer->start.X) >= 0) && ((width + layer->start.X) < Window->width))
                 {
-                    Window->Data[height + layer->start.Y][width + layer->start.X] = layer->Data[height][width];
+                    // 只填充窗口空白部分
+                    if (Window->Data[height + layer->start.Y][width + layer->start.X] == '\0')
+                    {
+                        Window->Data[height + layer->start.Y][width + layer->start.X] = layer->Data[height][width];
+                    }
                 }
             }
         }

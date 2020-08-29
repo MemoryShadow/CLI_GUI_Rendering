@@ -8,10 +8,6 @@
 
 #include "CLI_GUI_Rendering.h"
 
-#if _WIN32
-#include <conio.h>
-#endif
-
 int main(int argc, char const *argv[])
 {
     clear_screen(); // 清除屏幕

@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-29 15:21:54
+ * @LastEditTime : 2020-08-29 15:38:58
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -42,11 +42,14 @@ _POINT;
 // 一个绘制层的信息
 typedef struct _Layer
 {
+    // 用于储存此层的起始位置
     struct
     {
         unsigned X;
         unsigned Y;
     } start;
+    // 用于标识此层的属性,1为窗口层,0为绘制层
+    unsigned char Attributes;
     // 层的宽
     unsigned width;
     // 层的高

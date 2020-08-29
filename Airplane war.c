@@ -38,10 +38,6 @@ int main(int argc, char const *argv[])
         Write_Point(Aircraft_layer, 2, 1, '*');
         // 设置飞机坐标
         setlayerStart(Aircraft_layer, main_layer->width / 2 - 1, main_layer->height - 3);
-        // 储存飞机位置
-        COORD Aircraft_Position = {
-            Aircraft_layer->width / 2,
-            Aircraft_layer->height - 3};
         // 创建一个层用于储存飞机子弹
         Paint_layer *Aircraft_Bullet_layer = new_Paint_layer(main_layer, 0, 0);
         ControlSignal ch = 0;
@@ -70,8 +66,6 @@ int main(int argc, char const *argv[])
                     if (Aircraft_layer->start.Y >= 2)
                     {
                         MovelayerStart(Aircraft_layer, Up, 1);
-                        // 更新飞机坐标值
-                        Aircraft_Position.Y -= 1;
                     }
                     ch = '\0';
                     key_debug = "向前信号";
@@ -80,8 +74,6 @@ int main(int argc, char const *argv[])
                     if (Aircraft_layer->start.X >= 2)
                     {
                         MovelayerStart(Aircraft_layer, Left, 1);
-                        Aircraft_Position.X -= 1;
-                        printf("%d", Aircraft_Position.X);
                     }
                     ch = '\0';
                     key_debug = "向左信号";
@@ -90,7 +82,6 @@ int main(int argc, char const *argv[])
                     if (Aircraft_layer->start.X <= main_layer->width - 5)
                     {
                         MovelayerStart(Aircraft_layer, Right, 1);
-                        Aircraft_Position.X += 1;
                     }
                     ch = '\0';
                     key_debug = "向右信号";
@@ -99,7 +90,6 @@ int main(int argc, char const *argv[])
                     if (Aircraft_layer->start.Y <= main_layer->height - 4)
                     {
                         MovelayerStart(Aircraft_layer, Down, 1);
-                        Aircraft_Position.Y += 1;
                     }
                     ch = '\0';
                     key_debug = "向后信号";

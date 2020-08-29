@@ -28,32 +28,31 @@ int main(int argc, char const *argv[])
         Write_Point(edge_layer, main_layer->width - 1, index, '|');
     }
     // 小球层
-    Paint_layer *ball_layer = new_Paint_layer(main_layer, 0, 0);
+    Paint_layer *ball_layer = new_Paint_layer(main_layer, 1, 1);
+    // 绘制小球
+    Write_Point(ball_layer, 0, 0, '*');
+    // 设置小球初始位置
+    setlayerStart(ball_layer, 2, 2);
     // 小球运动代码
     {
-        unsigned width = 1, height = 1;
+        // 运动轨迹标记
         int width_flag = 1, height_flag = 1;
-        // 绘制
-        Write_Point(ball_layer, width += width_flag, height += height_flag, '*');
         while (1)
         {
             // 撞墙判断
-            if ((width >= (ball_layer->width - 2)) || (width <= 1))
+            if ((ball_layer->start.X >= (main_layer->width - 2)) || (ball_layer->start.X <= 1))
             {
-                printf("W:%d H:%d WF:%d HF:%d\t\n", width, height, width_flag, height_flag);
+                printf("W:%d H:%d WF:%d HF:%d\t\n", ball_layer->start.X, ball_layer->start.Y, width_flag, height_flag);
                 width_flag = -width_flag;
             }
-            if ((height >= (ball_layer->height - 2)) || (height <= 1))
+            if ((ball_layer->start.Y >= (main_layer->height - 2)) || (ball_layer->start.Y <= 1))
             {
-                printf("W:%d H:%d WF:%d HF:%d\t\n", width, height, width_flag, height_flag);
+                printf("W:%d H:%d WF:%d HF:%d\t\n", ball_layer->start.X, ball_layer->start.Y, width_flag, height_flag);
                 height_flag = -height_flag;
             }
-            // system("cls");
             WindowDraw(main_layer, 1);
-            // 移动并计算位置
-            layer_Move(ball_layer, (width_flag < 0 ? Left : Right) | (height_flag < 0 ? Up : Down), 1);
-            width += width_flag;
-            height += height_flag;
+            // 移动小球
+            MovelayerStart(ball_layer, (width_flag < 0 ? Left : Right) | (height_flag < 0 ? Up : Down), 1);
         }
     }
     delete_Window_layer(main_layer);

@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-08-29 17:13:42
+ * @LastEditTime : 2020-09-02 03:54:25
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -36,8 +36,6 @@ typedef struct _COORD
 } COORD;
 
 #endif
-
-_POINT;
 
 // 一个绘制层的信息
 typedef struct _Layer
@@ -434,7 +432,6 @@ void WindowDraw(Window_layer *Window, int Convert)
                 SetConsoleCursorPosition(hOut, pos);
                 // 隐藏光标
                 SetConsoleCursorInfo(hOut, &cinfo);
-                usleep(50);
 #endif
 // 以下是linux下的代码
 #if __linux__
@@ -442,8 +439,6 @@ void WindowDraw(Window_layer *Window, int Convert)
                 printf("\033[%d;%dH", pos.Y + (Convert ? 2 : 1), pos.X + (Convert ? 2 : 1));
                 // 隐藏光标
                 printf("\033[?25l");
-                // linux下运行的太快啦!在这里设置上休眠周期
-                usleep(50);
 #endif
                 if (Convert)
                 // 如果转换选项被打开,就执行这里的逻辑
@@ -487,6 +482,10 @@ void WindowDraw(Window_layer *Window, int Convert)
             }
         }
         printf("\n");
+#if __linux__
+        // linux下运行的太快啦!在这里设置上休眠周期(每页休眠一段时间)
+        usleep(50);
+#endif
     }
 }
 

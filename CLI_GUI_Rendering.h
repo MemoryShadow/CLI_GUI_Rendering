@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-09-02 03:54:25
+ * @LastEditTime : 2020-09-02 13:59:49
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -58,16 +58,11 @@ typedef struct _Layer
     struct _Layer *Next;
 } Window_layer, SmartObject_Paint_layer, Paint_layer;
 
-/* 
-* 绘制层规则很简单
-* 可以通过四个信号控制绘制层向四个方向移动
-* 移动过程中会将超出的部分截断(数据会丢失),而新的地方将会填充空白
-* 数字越小的绘制层将会越在上层(即处理后续层将只会填充空区域)
-*/
-
 // 函数签名
+// * 创建一个层
+struct _layer *new_layer(unsigned width, unsigned height);
 // * 创建窗口层
-Window_layer *new_Window_layer(unsigned width, unsigned height);
+Window_layer *new_Window_layer(unsigned width, unsigned height, Window_layer *Base);
 // * 在指定窗口的最上层创建一个指定大小的绘制层,如果为0就继承窗口层的属性
 Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned height);
 // * 计算某个窗口绘制层数量
@@ -93,35 +88,66 @@ CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
 Paint_layer *layer_Move(Paint_layer *layer, unsigned Direction, unsigned length);
 
+/*** 
+ * @description: 创建一个层
+ * @param {
+ * width 指定此层的宽度
+ * height 指定此层的高度} 
+ * @return {
+ * Window_layer * 返回此层的指针
+ * } 
+ */
+struct _layer *new_layer(unsigned width, unsigned height)
+{
+    // 分配内存给层
+    Paint_layer *layer = (Paint_layer *)malloc(sizeof(Paint_layer));
+    layer->Data = (CHAR **)malloc(sizeof(CHAR *) * height);
+    // 进行初始化(顺便对二维数组内容进行界定)
+    for (unsigned j = 0; j < height; j++)
+    {
+        layer->Data[j] = (CHAR *)malloc(sizeof(CHAR) * width);
+        for (unsigned i = 0; i < width; i++)
+        {
+            // layer->Data[j][i] = '　';
+            // layer->Data[j][i] = '\u3000';
+            layer->Data[j][i] = '\0';
+        }
+    }
+    // 处理层属性
+    setlayerStart(layer, 0, 0); // 设置一个层的默认位置在0,0的位置
+    layer->Attributes = 0;      // 设置为一个绘制层
+    layer->height = height;
+    layer->width = width;
+    layer->Next = NULL;
+    return layer;
+}
+
 /**
  * @description: 创建窗口
  * @param {
  * width 指定此窗口的宽度
  * height 指定此窗口的高度
+ * Base 指定父窗口层,如果无父窗口,设为NULL即可
  * } 
  * @return: Window_layer * 返回此窗口的指针
  */
-Window_layer *new_Window_layer(unsigned width, unsigned height)
+Window_layer *new_Window_layer(unsigned width, unsigned height, Window_layer *Base)
 {
-    // 分配内存给层
-    Window_layer *Window = (Window_layer *)malloc(sizeof(Window_layer));
-    Window->Data = (CHAR **)malloc(sizeof(CHAR *) * height);
-    // 进行初始化(顺便对二维数组内容进行界定)
-    setlayerStart(Window, 0, 0); // 设置一个窗口的默认位置在0,0的位置
-    Window->Attributes = 1;      // 设置为一个窗口层
-    for (unsigned j = 0; j < height; j++)
-    {
-        Window->Data[j] = (CHAR *)malloc(sizeof(CHAR) * width);
-        for (unsigned i = 0; i < width; i++)
-        {
-            // Window->Data[j][i] = '　';
-            // Window->Data[j][i] = '\u3000';
-            Window->Data[j][i] = '\0';
-        }
-    }
-    Window->height = height;
-    Window->width = width;
+    // 创建一个新层
+    Window_layer *Window = (Window_layer *)new_layer(width, height);
+    // 标识这是一个窗口层
+    Window->Attributes = 1;
     Window->Next = NULL;
+    // 对父窗口的绑定进行处理
+    if (Base != NULL) // 只响应Base不为NULL的情况
+    {
+        // 取得父窗口的末尾窗口指针
+        Window_layer *BaseWindow = layer_index(Base, layer_length(Base));
+        // 然后将本数据附在此层后面
+        Window->Next = BaseWindow->Next;
+        BaseWindow->Next = Window;
+    }
+
     return Window;
 }
 
@@ -136,11 +162,9 @@ Window_layer *new_Window_layer(unsigned width, unsigned height)
  */
 Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned height)
 {
-    // 将窗口初始化转换为一个层
-    Paint_layer *layer = (Paint_layer *)new_Window_layer((width != 0 ? width : Window->width), (height != 0 ? height : Window->height));
-    // 设置一个窗口的默认位置在0,0的位置
-    setlayerStart(Window, 0, 0);
-    // 标识这是一个窗口层
+    // 创建一个新层
+    Paint_layer *layer = (Paint_layer *)new_layer((width != 0 ? width : Window->width), (height != 0 ? height : Window->height));
+    // 标识这是一个绘制层
     layer->Attributes = 0;
     // 将层加入链表头
     layer->Next = Window->Next;
@@ -158,11 +182,11 @@ Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned heig
 unsigned layer_length(const Window_layer *Window)
 {
     // 将指针内容迁移
-    const Window_layer *Window_copy = Window->Next;
+    const Window_layer *Window_copy = Window;
     // 计算长度
     unsigned length = 0;
     // 只有在Next不为NULL，并且Attributes为0(绘制层)时才计数
-    while ((Window_copy->Next != NULL) && (Window_copy->Attributes == 0))
+    while ((Window_copy->Next != NULL) && (Window_copy->Next->Attributes == 0))
     {
         // 计数+1
         length++;
@@ -349,8 +373,8 @@ Window_layer *WindowRender(Window_layer *Window)
     // * 渲染窗口
     // 绘制层指针
     Paint_layer *layer = Window->Next;
-    // 遍历绘制层列表
-    while (layer != NULL)
+    // 遍历绘制层列表 遍历条件:只要layer不为NULL,并且Attributes不等于1,就说明是个绘制层
+    while ((layer != NULL) && (layer->Attributes != 1))
     {
         // * 将内容渲染到主窗口
         // 按照偏移量检查设置
@@ -377,6 +401,7 @@ Window_layer *WindowRender(Window_layer *Window)
 }
 
 // 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值为空格)
+// TODO 支持多窗口绘制
 void WindowDraw(Window_layer *Window, int Convert)
 {
     // 缓存的上一次打印
@@ -394,12 +419,12 @@ void WindowDraw(Window_layer *Window, int Convert)
     // 如果备份内容为NULL就执行初始化
     if (Cache_Window == NULL)
     {
-        Cache_Window = new_Window_layer(Window->width, Window->height);
+        Cache_Window = new_Window_layer(Window->width, Window->height, NULL);
     }
     else if ((Cache_Window->width != Window->width) || (Cache_Window->height != Window->height))
     { // 兼容化备份区域 如果宽高不一样(会先删除之前的窗口)
         // * 创建新窗口
-        Window_layer *T_Compatible_Window = new_Window_layer(Window->width, Window->height);
+        Window_layer *T_Compatible_Window = new_Window_layer(Window->width, Window->height, NULL);
         // * 复制内容
         for (unsigned width = 0; width < Window->width; width++)
         {

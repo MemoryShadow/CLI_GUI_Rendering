@@ -12,7 +12,7 @@ int main(int argc, char const *argv[])
 {
     clear_screen(); // 清除屏幕
     // 在最开始创建主绘制层(窗口层)
-    Window_layer *main_layer = new_Window_layer(20, 29);
+    Window_layer *main_layer = new_Window_layer(20, 29, NULL);
     //边界图层
     Paint_layer *edge_layer = new_Paint_layer(main_layer, 0, 0);
 

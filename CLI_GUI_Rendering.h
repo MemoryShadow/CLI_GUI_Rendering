@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-09-02 13:59:49
+ * @LastEditTime : 2020-09-03 14:09:50
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -353,6 +353,7 @@ void delete_Window_layer(Window_layer *Window)
 
 /*** 
  * @description: 渲染指定窗口,渲染后的内容将被储存在窗口层中
+ * TODO 支持多窗口绘制
  * @param {
  * Window 要渲染的窗口层
  * } 
@@ -401,7 +402,6 @@ Window_layer *WindowRender(Window_layer *Window)
 }
 
 // 绘制指定窗口,选项Convert为非0时将会启动转换模式,将半角字符绘制为全角(无论如何都会转换空值为空格)
-// TODO 支持多窗口绘制
 void WindowDraw(Window_layer *Window, int Convert)
 {
     // 缓存的上一次打印
@@ -446,7 +446,8 @@ void WindowDraw(Window_layer *Window, int Convert)
             if (!Get_Point(Window, width, height) || (Get_Point(Window, width, height) != Get_Point(Cache_Window, width, height)))
             {
                 // 根据Convert的值来到达下一个值的位置
-                COORD pos = {(Convert ? width * 2 : width), height};
+                // 根据start的值计算偏移量
+                COORD pos = {(Convert ? ((width + Window->start.X) * 2) : (width + Window->start.X)), height + Window->start.Y};
 // 如果不一样,就移动光标至指定位置,以下是Windows下的代码
 #ifdef _WIN32
                 // 获取窗口句柄

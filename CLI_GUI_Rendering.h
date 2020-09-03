@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-09-03 14:09:50
+ * @LastEditTime : 2020-09-03 16:00:01
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -353,7 +353,6 @@ void delete_Window_layer(Window_layer *Window)
 
 /*** 
  * @description: 渲染指定窗口,渲染后的内容将被储存在窗口层中
- * TODO 支持多窗口绘制
  * @param {
  * Window 要渲染的窗口层
  * } 
@@ -374,23 +373,42 @@ Window_layer *WindowRender(Window_layer *Window)
     // * 渲染窗口
     // 绘制层指针
     Paint_layer *layer = Window->Next;
-    // 遍历绘制层列表 遍历条件:只要layer不为NULL,并且Attributes不等于1,就说明是个绘制层
-    while ((layer != NULL) && (layer->Attributes != 1))
+    // 创建用于储存偏移量的结构
+    struct
+    {
+        unsigned X;
+        unsigned Y;
+    } Temp_start = {0, 0};
+    // 遍历绘制层列表 遍历条件:只要layer不为NULL
+    while (layer != NULL)
     {
         // * 将内容渲染到主窗口
         // 按照偏移量检查设置
+        // 检查当前窗口是否为窗口层
+        if (layer->Attributes == 1)
+        {
+            // * 如果为窗口层
+            // 就记录此子窗口层偏移量
+            Temp_start.X = layer->start.X;
+            Temp_start.Y = layer->start.Y;
+            // 将当前索引移动到下一个层
+            layer = layer->Next;
+            // 并且跳出
+            continue;
+        }
+
         // 遍历此绘制层内容
         for (unsigned height = 0; height < layer->height; height++)
         {
             for (unsigned width = 0; width < layer->width; width++)
             {
                 // 不渲染超出部分
-                if (((height + layer->start.Y) >= 0) && ((height + layer->start.Y) < Window->height) && ((width + layer->start.X) >= 0) && ((width + layer->start.X) < Window->width))
+                if (((height + layer->start.Y + Temp_start.Y) >= 0) && ((height + layer->start.Y + Temp_start.Y) < Window->height) && ((width + layer->start.X + Temp_start.X) >= 0) && ((width + layer->start.X + Temp_start.X) < Window->width))
                 {
                     // 只填充窗口空白部分
-                    if (Window->Data[height + layer->start.Y][width + layer->start.X] == '\0')
+                    if (Window->Data[height + layer->start.Y + Temp_start.Y][width + layer->start.X + Temp_start.X] == '\0')
                     {
-                        Window->Data[height + layer->start.Y][width + layer->start.X] = layer->Data[height][width];
+                        Window->Data[height + layer->start.Y + Temp_start.Y][width + layer->start.X + Temp_start.X] = layer->Data[height][width];
                     }
                 }
             }

@@ -12,10 +12,19 @@ int main(int argc, char const *argv[])
 {
     clear_screen(); // 清除屏幕
     // 在最开始创建主绘制层(窗口层)
-    Window_layer *main_layer = new_Window_layer(20, 29, NULL);
-    setlayerStart(main_layer, 2, 2);
+    Window_layer *Base_layer = new_Window_layer(30, 29, NULL);
+    Window_layer *main_layer = new_Window_layer(20, 29, Base_layer);
+    Window_layer *Info_layer = new_Window_layer(10, 29, Base_layer);
+    setlayerStart(Info_layer, 19, 0);
     //边界图层
     Paint_layer *edge_layer = new_Paint_layer(main_layer, 0, 0);
+    Paint_layer *edge2_layer = new_Paint_layer(Info_layer, 0, 0);
+    // 文字层
+    Paint_layer *Text_layer = new_Paint_layer(Info_layer, 5, 1);
+    setlayerStart(Text_layer, 2, 2);
+    // 显示文字
+    Write_Point(Text_layer, 0, 0, '|');
+    Write_Point(Text_layer, 4, 0, '|');
 
     // 绘制周围边界
     for (unsigned index = 1; index < main_layer->width - 1; index++)
@@ -27,6 +36,16 @@ int main(int argc, char const *argv[])
     {
         Write_Point(edge_layer, 0, index, '|');
         Write_Point(edge_layer, main_layer->width - 1, index, '|');
+    }
+    for (unsigned index = 1; index < Info_layer->width - 1; index++)
+    {
+        Write_Point(edge2_layer, index, 0, '-');
+        Write_Point(edge2_layer, index, Info_layer->height - 1, '-');
+    }
+    for (unsigned index = 1; index < Info_layer->height - 1; index++)
+    {
+        Write_Point(edge2_layer, 0, index, '|');
+        Write_Point(edge2_layer, Info_layer->width - 1, index, '|');
     }
     // 游戏代码
     {
@@ -113,18 +132,18 @@ int main(int argc, char const *argv[])
                 if (ch == 32)
                 {
                     // 按下空格时在飞机前方绘制子弹
-                    Write_Point(Aircraft_Bullet_layer, Aircraft_layer->start.X + 1, Aircraft_layer->start.Y - 1, '|');
+                    Write_Point(Aircraft_Bullet_layer, Aircraft_layer->start.X + 1, Aircraft_layer->start.Y, '|');
                     ch = '\0';
-                    key_debug = "空格";
+                    key_debug = "空格信号";
                 }
             }
             // 无论如何,子弹都会向前移动
             layer_Move(Aircraft_Bullet_layer, Up, 1);
             // 刷新界面
-            WindowDraw(main_layer, 1);
+            WindowDraw(Base_layer, 1);
             ch != '\0' ? printf("当前没有任何操作") : printf("%s\t\t\t\t\t", key_debug);
         }
     }
-    delete_Window_layer(main_layer);
+    delete_Window_layer(Base_layer);
     return 0;
 }

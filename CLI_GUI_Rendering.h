@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-09-08 12:54:53
+ * @LastEditTime : 2020-09-08 13:50:40
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -52,7 +52,9 @@ typedef struct _Layer
         // 用于标识此层的属性,1为窗口层,0为绘制层
         unsigned char Attributes;
         // "不要更新" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,用于加速渲染过程
-        unsigned char NotUpdata;
+        // unsigned char NotUpdata;
+        // "不要渲染" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,用于加速渲染过程
+        unsigned char NotRender;
     } flag;
     // 层的宽
     unsigned width;
@@ -122,7 +124,7 @@ struct _layer *new_layer(unsigned width, unsigned height)
     // 处理层属性
     setlayerStart(layer, 0, 0); // 设置一个层的默认位置在0,0的位置
     layer->flag.Attributes = 0; // 设置为一个绘制层
-    layer->flag.NotUpdata = 0;  // 默认设置更新
+    layer->flag.NotRender = 0;  // 默认设置渲染
     layer->height = height;
     layer->width = width;
     layer->Next = NULL;
@@ -230,9 +232,9 @@ Paint_layer *setlayerStart(Paint_layer *layer, unsigned X, unsigned Y)
  * Paint_layer 返回对应的层下标
  * } 
  */
-Paint_layer *setNotUpdata(Paint_layer *layer, unsigned value)
+Paint_layer *setNotRender(Paint_layer *layer, unsigned value)
 {
-    layer->flag.NotUpdata = value;
+    layer->flag.NotRender = value;
     return layer;
 }
 
@@ -384,14 +386,6 @@ void delete_Window_layer(Window_layer *Window)
  */
 Window_layer *WindowRender(Window_layer *Window)
 {
-    // * 清空窗口层
-    for (unsigned height = 0; height < Window->height; height++)
-    {
-        for (unsigned width = 0; width < Window->width; width++)
-        {
-            Write_Point(Window, width, height, '\0');
-        }
-    }
     // * 渲染窗口
     // 绘制层指针
     Paint_layer *layer = Window->Next;
@@ -400,13 +394,13 @@ Window_layer *WindowRender(Window_layer *Window)
     {
         unsigned X;
         unsigned Y;
-    } Temp_start = {0, 0};
+    } Temp_start = {0, 0}, CachePoint = {0, 0};
     // 遍历绘制层列表 遍历条件:只要layer不为NULL
     while (layer != NULL)
     {
         // * 将内容渲染到主窗口
         // 检查是否设置“不要更新标记”
-        if (layer->flag.NotUpdata == 1)
+        if (layer->flag.NotRender == 1)
         {
             // 将当前索引移动到下一个层
             layer = layer->Next;
@@ -432,13 +426,16 @@ Window_layer *WindowRender(Window_layer *Window)
         {
             for (unsigned width = 0; width < layer->width; width++)
             {
+                // 提前计算要渲染的位置
+                CachePoint.Y = height + layer->start.Y + Temp_start.Y;
+                CachePoint.X = width + layer->start.X + Temp_start.X;
                 // 不渲染超出部分
-                if (((height + layer->start.Y + Temp_start.Y) >= 0) && ((height + layer->start.Y + Temp_start.Y) < Window->height) && ((width + layer->start.X + Temp_start.X) >= 0) && ((width + layer->start.X + Temp_start.X) < Window->width))
+                if ((CachePoint.Y >= 0) && (CachePoint.Y < Window->height) && (CachePoint.X >= 0) && (CachePoint.X < Window->width))
                 {
-                    // 只填充窗口空白部分
-                    if (Window->Data[height + layer->start.Y + Temp_start.Y][width + layer->start.X + Temp_start.X] == '\0')
+                    // 只渲染有更改的空白部分
+                    if ((Window->Data[CachePoint.Y][CachePoint.X] != layer->Data[height][width]) && (Window->Data[CachePoint.Y][CachePoint.X] == '\0'))
                     {
-                        Window->Data[height + layer->start.Y + Temp_start.Y][width + layer->start.X + Temp_start.X] = layer->Data[height][width];
+                        Window->Data[CachePoint.Y][CachePoint.X] = layer->Data[height][width];
                     }
                 }
             }
@@ -604,8 +601,8 @@ CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y)
     }
 
     // 写入数据
-
-    return (layer->Data[y][x]);
+    char Debug = layer->Data[y][x];
+    return (Debug);
 }
 
 /** 

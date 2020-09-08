@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-09-08 12:35:38
+ * @LastEditTime : 2020-09-08 12:54:53
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -122,6 +122,7 @@ struct _layer *new_layer(unsigned width, unsigned height)
     // 处理层属性
     setlayerStart(layer, 0, 0); // 设置一个层的默认位置在0,0的位置
     layer->flag.Attributes = 0; // 设置为一个绘制层
+    layer->flag.NotUpdata = 0;  // 默认设置更新
     layer->height = height;
     layer->width = width;
     layer->Next = NULL;
@@ -217,6 +218,21 @@ Paint_layer *setlayerStart(Paint_layer *layer, unsigned X, unsigned Y)
 {
     layer->start.X = X;
     layer->start.Y = Y;
+    return layer;
+}
+
+/*** 
+ * @description: 设置指定层是否更新
+ * @param {
+ * layer 要修改的层指针
+ * } 
+ * @return {
+ * Paint_layer 返回对应的层下标
+ * } 
+ */
+Paint_layer *setNotUpdata(Paint_layer *layer, unsigned value)
+{
+    layer->flag.NotUpdata = value;
     return layer;
 }
 
@@ -389,7 +405,15 @@ Window_layer *WindowRender(Window_layer *Window)
     while (layer != NULL)
     {
         // * 将内容渲染到主窗口
-        // 按照偏移量检查设置
+        // 检查是否设置“不要更新标记”
+        if (layer->flag.NotUpdata == 1)
+        {
+            // 将当前索引移动到下一个层
+            layer = layer->Next;
+            // 如果被设置,就跳过这个层
+            continue;
+        }
+
         // 检查当前窗口是否为窗口层
         if (layer->flag.Attributes == 1)
         {

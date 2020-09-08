@@ -2,7 +2,7 @@
  * @Date         : 2020-04-14 21:41:50
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
- * @LastEditTime : 2020-09-03 16:00:01
+ * @LastEditTime : 2020-09-08 12:35:38
  * @Description  : 一个用于在命令行中玩耍的GUI库,绘制逻辑和Adobe PhotoShop中的图层类似
  */
 
@@ -46,8 +46,14 @@ typedef struct _Layer
         unsigned X;
         unsigned Y;
     } start;
-    // 用于标识此层的属性,1为窗口层,0为绘制层
-    unsigned char Attributes;
+    // 用于储存的层标志
+    struct
+    {
+        // 用于标识此层的属性,1为窗口层,0为绘制层
+        unsigned char Attributes;
+        // "不要更新" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,用于加速渲染过程
+        unsigned char NotUpdata;
+    } flag;
     // 层的宽
     unsigned width;
     // 层的高
@@ -115,7 +121,7 @@ struct _layer *new_layer(unsigned width, unsigned height)
     }
     // 处理层属性
     setlayerStart(layer, 0, 0); // 设置一个层的默认位置在0,0的位置
-    layer->Attributes = 0;      // 设置为一个绘制层
+    layer->flag.Attributes = 0; // 设置为一个绘制层
     layer->height = height;
     layer->width = width;
     layer->Next = NULL;
@@ -136,7 +142,7 @@ Window_layer *new_Window_layer(unsigned width, unsigned height, Window_layer *Ba
     // 创建一个新层
     Window_layer *Window = (Window_layer *)new_layer(width, height);
     // 标识这是一个窗口层
-    Window->Attributes = 1;
+    Window->flag.Attributes = 1;
     Window->Next = NULL;
     // 对父窗口的绑定进行处理
     if (Base != NULL) // 只响应Base不为NULL的情况
@@ -165,7 +171,7 @@ Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned heig
     // 创建一个新层
     Paint_layer *layer = (Paint_layer *)new_layer((width != 0 ? width : Window->width), (height != 0 ? height : Window->height));
     // 标识这是一个绘制层
-    layer->Attributes = 0;
+    layer->flag.Attributes = 0;
     // 将层加入链表头
     layer->Next = Window->Next;
     Window->Next = layer;
@@ -186,7 +192,7 @@ unsigned layer_length(const Window_layer *Window)
     // 计算长度
     unsigned length = 0;
     // 只有在Next不为NULL，并且Attributes为0(绘制层)时才计数
-    while ((Window_copy->Next != NULL) && (Window_copy->Next->Attributes == 0))
+    while ((Window_copy->Next != NULL) && (Window_copy->Next->flag.Attributes == 0))
     {
         // 计数+1
         length++;
@@ -385,7 +391,7 @@ Window_layer *WindowRender(Window_layer *Window)
         // * 将内容渲染到主窗口
         // 按照偏移量检查设置
         // 检查当前窗口是否为窗口层
-        if (layer->Attributes == 1)
+        if (layer->flag.Attributes == 1)
         {
             // * 如果为窗口层
             // 就记录此子窗口层偏移量

@@ -35,6 +35,19 @@ typedef struct _COORD
     SHORT Y; // vertical coordinate
 } COORD;
 
+// 用于记录窗口的选项
+typedef enum
+{
+    // 用于标识此层的属性,1为窗口层,0为绘制层
+    Attributes = 1,      // (0000 0001)
+    // "不再更新" 选项,设置为1将预渲染此层数据,并置于底层用于加快渲染,设置为0将渲染此层,默认为0
+    NotUpdata = 2,       // (0000 0010)
+    // "不要渲染" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,默认为0
+    NotRender = 4,       // (0000 0100)
+} _Layer_Flag;
+
+typedef unsigned char Layer_Flag; // 储存一个8位的控制信号
+
 #endif
 
 // 一个绘制层的信息
@@ -47,15 +60,7 @@ typedef struct _Layer
         unsigned Y;
     } start;
     // 用于储存的层标志
-    struct
-    {
-        // 用于标识此层的属性,1为窗口层,0为绘制层
-        unsigned char Attributes;
-        // "不要更新" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,用于加速渲染过程
-        // unsigned char NotUpdata;
-        // "不要渲染" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,用于加速渲染过程
-        unsigned char NotRender;
-    } flag;
+    Layer_Flag flag;
     // 层的宽
     unsigned width;
     // 层的高
@@ -122,9 +127,8 @@ struct _layer *new_layer(unsigned width, unsigned height)
         }
     }
     // 处理层属性
-    setlayerStart(layer, 0, 0); // 设置一个层的默认位置在0,0的位置
-    layer->flag.Attributes = 0; // 设置为一个绘制层
-    layer->flag.NotRender = 0;  // 默认设置渲染
+    setlayerStart(layer, 0, 0);    // 设置一个层的默认位置在0,0的位置
+    layer->flag = 0;               // 默认情况下, 都是为0
     layer->height = height;
     layer->width = width;
     layer->Next = NULL;
@@ -145,7 +149,7 @@ Window_layer *new_Window_layer(unsigned width, unsigned height, Window_layer *Ba
     // 创建一个新层
     Window_layer *Window = (Window_layer *)new_layer(width, height);
     // 标识这是一个窗口层
-    Window->flag.Attributes = 1;
+    Window->flag |= Attributes;
     Window->Next = NULL;
     // 对父窗口的绑定进行处理
     if (Base != NULL) // 只响应Base不为NULL的情况
@@ -173,8 +177,7 @@ Paint_layer *new_Paint_layer(Window_layer *Window, unsigned width, unsigned heig
 {
     // 创建一个新层
     Paint_layer *layer = (Paint_layer *)new_layer((width != 0 ? width : Window->width), (height != 0 ? height : Window->height));
-    // 标识这是一个绘制层
-    layer->flag.Attributes = 0;
+    // 标识这是一个绘制层(这是默认的, 所以不用管)
     // 将层加入链表头
     layer->Next = Window->Next;
     Window->Next = layer;
@@ -195,7 +198,7 @@ unsigned layer_length(const Window_layer *Window)
     // 计算长度
     unsigned length = 0;
     // 只有在Next不为NULL，并且Attributes为0(绘制层)时才计数
-    while ((Window_copy->Next != NULL) && (Window_copy->Next->flag.Attributes == 0))
+    while ((Window_copy->Next != NULL) && (Window_copy->Next->flag & Attributes))
     {
         // 计数+1
         length++;
@@ -234,7 +237,10 @@ Paint_layer *setlayerStart(Paint_layer *layer, unsigned X, unsigned Y)
  */
 Paint_layer *setNotRender(Paint_layer *layer, unsigned value)
 {
-    layer->flag.NotRender = value;
+    // 如果是1(true)则设置为不渲染
+    if (value) layer->flag |= NotRender;
+    else if (layer->flag & NotRender) layer->flag &= ~NotRender;
+    
     return layer;
 }
 
@@ -386,6 +392,7 @@ void delete_Window_layer(Window_layer *Window)
  */
 Window_layer *WindowRender(Window_layer *Window)
 {
+    // TODO 渲染时允许触发碰撞的效果
     // * 渲染窗口
     // 绘制层指针
     Paint_layer *layer = Window->Next;
@@ -400,7 +407,7 @@ Window_layer *WindowRender(Window_layer *Window)
     {
         // * 将内容渲染到主窗口
         // 检查是否设置“不要更新标记”
-        if (layer->flag.NotRender == 1)
+        if (layer->flag & NotRender)
         {
             // 将当前索引移动到下一个层
             layer = layer->Next;
@@ -409,7 +416,7 @@ Window_layer *WindowRender(Window_layer *Window)
         }
 
         // 检查当前窗口是否为窗口层
-        if (layer->flag.Attributes == 1)
+        if (layer->flag & Attributes)
         {
             // * 如果为窗口层
             // 就记录此子窗口层偏移量

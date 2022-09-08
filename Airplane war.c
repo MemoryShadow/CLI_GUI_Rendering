@@ -64,6 +64,7 @@ int main(int argc, char const *argv[])
         CHAR *key_debug = NULL;
         FunctionKeys functionKeys = NO_FunctionKeys;
         // 消息循环
+        close_termios_echo(1);
         while (1)
         {
             if (kbhit())
@@ -118,6 +119,8 @@ int main(int argc, char const *argv[])
                     printf("游戏已暂停:再次按下Esc退出游戏");
                     if (ESC == isFunctionSignalKey(getch()))
                     {
+                        delete_Window_layer(Base_layer);
+                        close_termios_echo(0);
                         exit(0);
                     }
                     break;
@@ -144,6 +147,5 @@ int main(int argc, char const *argv[])
             ch != '\0' ? printf("当前没有任何操作") : printf("%s\t\t\t\t\t", key_debug);
         }
     }
-    delete_Window_layer(Base_layer);
     return 0;
 }

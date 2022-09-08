@@ -1,4 +1,4 @@
-/*** 
+/***
  * @Date         : 2020-08-25 05:14:28
  * @Author       : MemoryShadow
  * @LastEditors  : MemoryShadow
@@ -34,37 +34,55 @@ typedef unsigned char ControlSignal; // 储存一个8位的控制信号
 
 #include <stdio.h>
 #include <termio.h>
-// 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
-int getch(void)
-{
-    struct termios tm, tm_old;
-    int fd = 0, ch = '\0';
-
-    if (tcgetattr(fd, &tm) < 0)
-    { //保存现在的终端设置
-        return -1;
-    }
-
-    tm_old = tm;
-    cfmakeraw(&tm); //更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
-    if (tcsetattr(fd, TCSANOW, &tm) < 0)
-    { //设置上更改之后的设置
-        return -1;
-    }
-
-    ch = getchar();
-    if (tcsetattr(fd, TCSANOW, &tm_old) < 0)
-    { //更改设置为最初的样子
-        return -1;
-    }
-
-    return ch;
-}
-
 #include <fcntl.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
+// 此函数用于关闭或打开终端按键回显(如果没有提交, 则会在终端中显示按键)
+// 当state为1时, 关闭终端回显信息, 当为0时打开终端回显信息
+int close_termios_echo(int state)
+{
+    struct termios tm;
+    int fd = 0;
+    static struct termios tm_old;
+    static int back_tm = 0;
+    if (back_tm == 0 && state == 1)
+    {
+        //保存现在的终端设置
+        if (tcgetattr(fd, &tm) < 0)
+            return -1;
+        tm_old = tm;
+        back_tm = 1;
+        //更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
+        cfmakeraw(&tm);
+        //设置上更改之后的设置
+        if (tcsetattr(fd, TCSANOW, &tm) < 0)
+            return -1;
+        return 0;
+    }
+    if (back_tm == 1 && state == 0)
+    {
+        //更改设置为最初的样子
+        if (tcsetattr(fd, TCSANOW, &tm_old) < 0)
+            return -1;
+        back_tm = 0;
+        return 0;
+    }
+    return -1;
+}
+
+// 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
+int getch(void)
+{
+    int close_termios_echo_status = close_termios_echo(1);
+    int ch = '\0';
+    ch = getchar();
+    // 检查是否成功关闭回显, 如果成功关闭回显, 则在程序退出时打开回显
+    if (close_termios_echo_status == 0)
+        close_termios_echo(0);
+    return ch;
+}
+
 // kbhit的linux再实现, https://blog.csdn.net/dongshibo12/article/details/76208482?utm_source=blogxgwz0
 int kbhit(void)
 {
@@ -89,17 +107,17 @@ int kbhit(void)
 }
 #endif
 
-/*** 
+/***
  * @description: {
  * 此函数对按键进行判断，检查它是否为一个方向控制键
  * }
  * @param {
  * keySignal 传入的按键.
- * } 
+ * }
  * @return {
  * FunctionKeys 如果是一个控制信号，就返回控制信号，否则返回NO_FunctionKeys(0)
- * } 
- * 
+ * }
+ *
  */
 FunctionKeys isFunctionSignalKey(ControlSignal keySignal)
 {
@@ -203,16 +221,16 @@ FunctionKeys isFunctionSignalKey(ControlSignal keySignal)
     return Info;
 }
 
-/*** 
+/***
  * @description: 此函数允许将普通按键也转换为指定的控制键信号，例如按下W会返回Up，同时并不会使原本的监控失去效果(可以完全代替isFunctionSignalKey)
  * @param {
  * FunctionSignal 等待转换的控制信号,可以使用|提交多个,但是Key的顺序始终是按照FunctionKeys的顺序进行排列
  * Key* 要监视的按键列表,按照FunctionKeys的顺序进行排列,不会响应FunctionSignal中为0的项
  * returnKey 用户按下的按键，直接填写getch()就好
- * } 
+ * }
  * @return {
  * FunctionKeys 如果是一个控制信号，就返回控制信号，否则返回NO_FunctionKeys(0)
- * } 
+ * }
  */
 FunctionKeys isFunctionSignalKeyPlus(ControlSignal FunctionSignal, char *Key, char returnKey)
 {

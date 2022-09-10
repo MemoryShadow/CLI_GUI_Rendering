@@ -108,6 +108,8 @@ Window_layer *WindowRender(Window_layer *Window);
 void WindowDraw(Window_layer *Window, int Convert);
 // * 在指定的层中指定的位置,填充指定的字符(成功返回此层指针,失败返回NULL)
 Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char);
+// * 在指定的层中指定的位置,填充指定长度的字符串(成功返回此层指针,失败返回NULL)
+Paint_layer *Write_Line(Paint_layer *layer, unsigned x, unsigned y, CHAR * Char, unsigned int length);
 // * 在指定的层中获取指定位置的字符(成功返回此字符,失败..就返回\0好了)
 CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
@@ -559,6 +561,7 @@ void WindowDraw(Window_layer *Window, int Convert)
                         break;
                     default:
                         printf("%c", Window->Data[height][width]);
+                        fflush(stdout);
                         break;
                     }
                 }
@@ -606,6 +609,30 @@ Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char)
 
     // 写入数据
     layer->Data[y][x] = Char;
+    return layer;
+}
+
+/**
+ * @description: 在指定的层中指定的位置起始填充指定长度的字符串(成功返回此层指针,失败返回NULL)
+ * @param {
+ * layer 要进行操作的层
+ * x X轴起始坐标
+ * y Y轴起始坐标
+ * Char* 要填充的内容
+ * length 这条字符串的长度(避免有区域需要填0无法分辨的情况)
+ * } 
+ * @return: Paint_layer *
+ */
+Paint_layer *Write_Line(Paint_layer *layer, unsigned x, unsigned y, CHAR * Char, unsigned int length)
+{
+    // 检查是否越界(这里最后那个条目之所以可以不需要等于, 是因为这里是填充,不是写入,所以不需要考虑\0)
+    if ((Char == NULL) || (layer->height <= y) || (layer->width <= x) || (layer->width < x + length)) return NULL;
+
+    // 写入数据
+    for (unsigned int i = 0; i < length; i++)
+    {
+        layer->Data[y][x + i] = Char[i];
+    }
     return layer;
 }
 

@@ -48,12 +48,12 @@ int main(int argc, char const *argv[])
     Paint_layer *Text_layer = new_Paint_layer(Info_layer, 6, 1);
     setlayerStart(Text_layer, 2, 2);
     // 显示文字
-    Write_Point(Text_layer, 0, 0, '|');
-    Write_Point(Text_layer, 1, 0, 'p');
-    Write_Point(Text_layer, 2, 0, 'l');
-    Write_Point(Text_layer, 3, 0, 'a');
-    Write_Point(Text_layer, 4, 0, 'y');
-    Write_Point(Text_layer, 5, 0, '|');
+    if(Write_Line(Text_layer, 0, 0, "|play|", 6) == NULL){
+        printf("Write_Line Error!");
+    }
+    // 文字层2
+    Paint_layer *Text2_layer = new_Paint_layer(Info_layer, 6, 1);
+    setlayerStart(Text2_layer, 2, 3);
 
     // 绘制周围边界
     for (unsigned index = 1; index < main_layer->width - 1; index++)
@@ -83,9 +83,7 @@ int main(int argc, char const *argv[])
         // 飞机层绑定碰撞事件
         // 绘制飞机
         Write_Point(Aircraft_layer, 1, 0, '*');
-        Write_Point(Aircraft_layer, 0, 1, '*');
-        Write_Point(Aircraft_layer, 1, 1, '*');
-        Write_Point(Aircraft_layer, 2, 1, '*');
+        Write_Line(Aircraft_layer, 0, 1, "***", 3);
         // 设置飞机坐标
         setlayerStart(Aircraft_layer, main_layer->width / 2 - 1, main_layer->height - 3);
         // 创建一个层用于储存飞机子弹
@@ -121,7 +119,7 @@ int main(int argc, char const *argv[])
                         MovelayerStart(Aircraft_layer, Up, 1);
                     }
                     ch = '\0';
-                    key_debug = "向前信号";
+                    key_debug = "| Up |";
                     break;
                 case Left:
                     if (Aircraft_layer->start.X >= 2)
@@ -129,7 +127,7 @@ int main(int argc, char const *argv[])
                         MovelayerStart(Aircraft_layer, Left, 1);
                     }
                     ch = '\0';
-                    key_debug = "向左信号";
+                    key_debug = "|Left|";
                     break;
                 case Right:
                     if (Aircraft_layer->start.X <= main_layer->width - 5)
@@ -137,7 +135,7 @@ int main(int argc, char const *argv[])
                         MovelayerStart(Aircraft_layer, Right, 1);
                     }
                     ch = '\0';
-                    key_debug = "向右信号";
+                    key_debug = "|Right";
                     break;
                 case Down:
                     if (Aircraft_layer->start.Y <= main_layer->height - 4)
@@ -145,7 +143,7 @@ int main(int argc, char const *argv[])
                         MovelayerStart(Aircraft_layer, Down, 1);
                     }
                     ch = '\0';
-                    key_debug = "向后信号";
+                    key_debug = "|Down|";
                     break;
                 case ESC:
                     printf("游戏已暂停:再次按下Esc退出游戏");
@@ -168,14 +166,14 @@ int main(int argc, char const *argv[])
                     // 按下空格时在飞机前方绘制子弹
                     Write_Point(Aircraft_Bullet_layer, Aircraft_layer->start.X + 1, Aircraft_layer->start.Y, '|');
                     ch = '\0';
-                    key_debug = "空格信号";
+                    key_debug = "|space";
                 }
             }
             // 无论如何,子弹层的内容都会向前移动
             layer_Move(Aircraft_Bullet_layer, Up, 1);
             // 刷新界面
             WindowDraw(Base_layer, 1);
-            ch != '\0' ? printf("当前没有任何操作") : printf("%s\t\t\t\t\t", key_debug);
+            ch != '\0' ? printf("当前没有任何操作") : Write_Line(Text2_layer, 0, 0, key_debug, 6);
         }
     }
     return 0;

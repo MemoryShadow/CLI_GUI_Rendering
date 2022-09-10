@@ -28,7 +28,7 @@ typedef char CHAR;
 typedef short SHORT;
 
 #endif
-// 实现摘自百度百科
+// 用于标记屏幕上的某个点. 实现摘自百度百科
 typedef struct _COORD
 {
     SHORT X; // horizontal coordinate
@@ -41,14 +41,20 @@ typedef enum
     // 用于标识此层的属性,1为窗口层,0为绘制层
     Attributes = 1,      // (0000 0001)
     // "不再更新" 选项,设置为1将预渲染此层数据,并置于底层用于加快渲染,设置为0将渲染此层,默认为0
-    NotUpdata = 2,       // (0000 0010)
+    NotUpdate = 2,       // (0000 0010)
     // "不要渲染" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,默认为0
     NotRender = 4,       // (0000 0100)
 } _Layer_Flag;
 
-typedef unsigned char Layer_Flag; // 储存一个8位的控制信号
-
 #endif
+
+// 用于记录事件列表
+typedef enum{
+    // 碰撞事件
+    Collision = 1,      // (0000 0001)
+} EventTypes;
+
+typedef unsigned char Layer_Flag; // 储存一个8位的控制信号
 
 // 一个绘制层的信息
 typedef struct _Layer
@@ -65,6 +71,12 @@ typedef struct _Layer
     unsigned width;
     // 层的高
     unsigned height;
+    struct{
+        // 碰撞事件的指针
+        // @param _Layer: 触发事件的层
+        // @param char: 触发事件的值
+        int (* onCollision)(struct _Layer *, COORD, char*);
+    } event;
     // 记录每个点的内容
     CHAR **Data;
     // 为链表做的准备
@@ -100,6 +112,8 @@ Paint_layer *Write_Point(Paint_layer *layer, unsigned x, unsigned y, CHAR Char);
 CHAR Get_Point(Paint_layer *layer, unsigned x, unsigned y);
 // * 移动一个层
 Paint_layer *layer_Move(Paint_layer *layer, unsigned Direction, unsigned length);
+// * 绑定指定层的指定事件, 返回已经被绑定的层
+struct _Layer *EventBinding(struct _Layer * layer, EventTypes eventType, int (* callback)(struct _Layer *, COORD, char*));
 
 /*** 
  * @description: 创建一个层
@@ -127,8 +141,9 @@ struct _layer *new_layer(unsigned width, unsigned height)
         }
     }
     // 处理层属性
-    setlayerStart(layer, 0, 0);    // 设置一个层的默认位置在0,0的位置
-    layer->flag = 0;               // 默认情况下, 都是为0
+    setlayerStart(layer, 0, 0);     // 设置一个层的默认位置在0,0的位置
+    layer->flag = 0;                // 默认情况下, 都是为0
+    layer->event.onCollision = NULL;// 将指针设置为空
     layer->height = height;
     layer->width = width;
     layer->Next = NULL;
@@ -382,7 +397,7 @@ void delete_Window_layer(Window_layer *Window)
 }
 
 /*** 
- * @description: 渲染指定窗口,渲染后的内容将被储存在窗口层中
+ * @description: 从下向上渲染指定窗口中的所有绘制层, 其中层数越低显示优先级越高, 渲染后的内容将被储存在窗口层中
  * @param {
  * Window 要渲染的窗口层
  * } 
@@ -392,16 +407,12 @@ void delete_Window_layer(Window_layer *Window)
  */
 Window_layer *WindowRender(Window_layer *Window)
 {
-    // TODO 渲染时允许触发碰撞的效果
     // * 渲染窗口
     // 绘制层指针
     Paint_layer *layer = Window->Next;
     // 创建用于储存偏移量的结构
-    struct
-    {
-        unsigned X;
-        unsigned Y;
-    } Temp_start = {0, 0}, CachePoint = {0, 0};
+    COORD Window_layer_start = {0, 0}, // 窗口层的起始位置
+        CachePoint = {0, 0};         // 缓存的点
     // 遍历绘制层列表 遍历条件:只要layer不为NULL
     while (layer != NULL)
     {
@@ -420,8 +431,8 @@ Window_layer *WindowRender(Window_layer *Window)
         {
             // * 如果为窗口层
             // 就记录此子窗口层偏移量
-            Temp_start.X = layer->start.X;
-            Temp_start.Y = layer->start.Y;
+            Window_layer_start.X = layer->start.X;
+            Window_layer_start.Y = layer->start.Y;
             // 将当前索引移动到下一个层
             layer = layer->Next;
             // 并且跳出
@@ -434,11 +445,19 @@ Window_layer *WindowRender(Window_layer *Window)
             for (unsigned width = 0; width < layer->width; width++)
             {
                 // 提前计算要渲染的位置
-                CachePoint.Y = height + layer->start.Y + Temp_start.Y;
-                CachePoint.X = width + layer->start.X + Temp_start.X;
+                CachePoint.Y = height + layer->start.Y + Window_layer_start.Y;
+                CachePoint.X = width + layer->start.X + Window_layer_start.X;
                 // 不渲染超出部分
                 if ((CachePoint.Y >= 0) && (CachePoint.Y < Window->height) && (CachePoint.X >= 0) && (CachePoint.X < Window->width))
                 {
+                    // 这里检测渲染事件, 如果抵达触发条件就调用处理函数
+                    //*触发条件: 函数不为null, 渲染目标位置非空, 并且要渲染的数据也为非空
+                    if ((layer->event.onCollision != NULL) && (Window->Data[CachePoint.Y][CachePoint.X] != '\0') && (layer->Data[height][width] != '\0'))
+                    {
+                        // 调用该层对应处理函数
+                        layer->event.onCollision(layer, (COORD){width, height}, &Window->Data[CachePoint.Y][CachePoint.X]);
+                    }
+                    
                     // 只渲染有更改的空白部分
                     if ((Window->Data[CachePoint.Y][CachePoint.X] != layer->Data[height][width]) && (Window->Data[CachePoint.Y][CachePoint.X] == '\0'))
                     {
@@ -458,7 +477,7 @@ void WindowDraw(Window_layer *Window, int Convert)
 {
     // 缓存的上一次打印
     static Window_layer *Cache_Window = NULL;
-    // * 清空窗口
+    // * 清空窗口层数据(这是上一次计算后的缓存)
     for (unsigned height = 0; height < Window->height; height++)
     {
         for (unsigned width = 0; width < Window->width; width++)
@@ -562,7 +581,7 @@ void WindowDraw(Window_layer *Window, int Convert)
         printf("\n");
 #if __linux__
         // linux下运行的太快啦!在这里设置上休眠周期(每页休眠一段时间)
-        usleep(50);
+        usleep(2500);
 #endif
     }
 }
@@ -733,4 +752,29 @@ void clear_screen(void)
 #if __linux__
     printf("\033[2J");
 #endif
+}
+
+/** 
+ * @description: {
+ * 绑定指定层的指定事件, 返回已经被绑定的层
+ * }
+ * @param {
+ * layer 要绑定的层
+ * event 要绑定的事件
+ * callback 要绑定的回调函数
+ * } 
+ * @return:{
+ * _layer 返回已经被绑定的层
+ * }
+ */
+
+struct _Layer *EventBinding(struct _Layer * layer, EventTypes eventType, int (* callback)(struct _Layer *, COORD, char*)){
+    switch (eventType)
+    {
+    case Collision:
+        layer->event.onCollision = callback;
+        break;
+    }
+
+    return layer;
 }

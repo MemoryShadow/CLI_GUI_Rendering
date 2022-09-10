@@ -23,9 +23,6 @@ typedef enum
 
 typedef unsigned char ControlSignal; // 储存一个8位的控制信号
 
-// typedef struct {
-// };
-
 #if _WIN32
 #include <conio.h>
 #endif
@@ -71,21 +68,26 @@ int close_termios_echo(int state)
     return -1;
 }
 
+void auto_re_termios(){
+    close_termios_echo(0);
+}
+
 // 重新实现getch https://blog.csdn.net/gaopu12345/article/details/30467099
 int getch(void)
 {
     int close_termios_echo_status = close_termios_echo(1);
     int ch = '\0';
     ch = getchar();
-    // 检查是否成功关闭回显, 如果成功关闭回显, 则在程序退出时打开回显
+    // 检查是否成功关闭回显, 如果成功关闭回显, 则在函数退出时打开回显
     if (close_termios_echo_status == 0)
-        close_termios_echo(0);
+        atexit(auto_re_termios);
     return ch;
 }
 
 // kbhit的linux再实现, https://blog.csdn.net/dongshibo12/article/details/76208482?utm_source=blogxgwz0
 int kbhit(void)
 {
+    int close_termios_echo_status = close_termios_echo(1);
     struct termios oldTermios, newt;
     int ch;
     int oldFcntl;
@@ -103,6 +105,9 @@ int kbhit(void)
         ungetc(ch, stdin);
         return 1;
     }
+    // 检查是否成功关闭回显, 如果成功关闭回显, 则在函数退出时打开回显
+    if (close_termios_echo_status == 0)
+        atexit(auto_re_termios);
     return 0;
 }
 #endif

@@ -35,7 +35,9 @@ typedef struct _COORD
     SHORT Y; // vertical coordinate
 } COORD;
 
-// 用于记录窗口的选项
+#endif
+
+// 用于记录层的选项
 typedef enum
 {
     // 用于标识此层的属性,1为窗口层,0为绘制层
@@ -45,8 +47,6 @@ typedef enum
     // "不要渲染" 选项,设置为1将不渲染此层数据,用于加快渲染,设置为0将渲染此层,默认为0
     NotRender = 4,  // (0000 0100)
 } _Layer_Flag;
-
-#endif
 
 // 用于记录事件列表
 typedef enum
